@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">StoragePathGetter</string>
+    <string name="text_information">ご利用の端末のストレージパスを表示します。</string>
+    <string name="text_inner_path">Path：内部ストレージ</string>
+    <string name="text_none">none</string>
+    <string name="text_external_path">Path：外部ストレージ</string>
+    <string name="text_get">取得</string>
+    <string name="text_clear">クリア</string>
+</resources>
