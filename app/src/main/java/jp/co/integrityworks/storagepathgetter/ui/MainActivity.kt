@@ -1,4 +1,4 @@
-package jp.co.integrityworks.storagepathgetter
+package jp.co.integrityworks.storagepathgetter.ui
 
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -6,6 +6,8 @@ import android.content.Context
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import jp.co.integrityworks.storagepathgetter.R
+import jp.co.integrityworks.storagepathgetter.Utils
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -33,8 +35,8 @@ class MainActivity : AppCompatActivity() {
                 Toast.LENGTH_LONG
             ).show()
         }
-        getPathButton.setOnClickListener { init() }
-        clearButton.setOnClickListener { }
+        bottomNavigation.setOnClickListener { init() }
+//        clearButton.setOnClickListener { }
     }
 
     override fun onResume() {

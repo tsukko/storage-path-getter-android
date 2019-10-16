@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+            android:id="@+id/navigationHint"
+            android:icon="@android:drawable/ic_dialog_info"
+            android:title="@string/text_hint" />
+    <item
+            android:id="@+id/navigationClear"
+            android:icon="@android:drawable/ic_menu_delete"
+            android:title="@string/text_clear" />
+    <item
+            android:id="@+id/navigationReacquire"
+            android:icon="@android:drawable/stat_notify_sync"
+            android:title="@string/text_reacquire" />
+</menu>
