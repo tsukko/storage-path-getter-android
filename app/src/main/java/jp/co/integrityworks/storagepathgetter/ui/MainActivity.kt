@@ -35,7 +35,24 @@ class MainActivity : AppCompatActivity() {
                 Toast.LENGTH_LONG
             ).show()
         }
-        bottomNavigation.setOnClickListener { init() }
+
+        bottomNavigation.setOnNavigationItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.navigationHint -> {
+                    true
+                }
+                R.id.navigationClear -> {
+                    true
+                }
+                R.id.navigationReacquire -> {
+                    init()
+                    true
+                }
+                else -> false
+            }
+        }
+
+//        bottomNavigation.setOnClickListener { init() }
 //        clearButton.setOnClickListener { }
     }
 
