@@ -41,7 +41,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="@dimen/margin_middle"
                 android:background="@drawable/button_state"
-                android:text="@android:string/copy" />
+                android:text="@android:string/copy"
+                android:textColor="@android:color/white" />
     </LinearLayout>
 
     <EditText
@@ -90,7 +91,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="@dimen/margin_middle"
                 android:background="@drawable/button_state"
-                android:text="@android:string/copy" />
+                android:text="@android:string/copy"
+                android:textColor="@android:color/white" />
     </LinearLayout>
 
     <EditText
@@ -160,10 +162,8 @@
             android:layout_gravity="bottom"
             android:layout_margin="@dimen/margin_large"
             android:background="@drawable/button_navigation_background"
-            app:itemBackground="@drawable/button_navigation_background"
-            app:itemIconTint="@drawable/bottom_navigation_item_state"
-            app:itemTextColor="@drawable/bottom_navigation_item_state"
-            app:labelVisibilityMode="labeled"
+            android:layout_marginBottom="16dp"
+            app:labelVisibilityMode="unlabeled"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
