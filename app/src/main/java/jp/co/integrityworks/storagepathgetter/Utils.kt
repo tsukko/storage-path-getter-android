@@ -3,8 +3,8 @@ package jp.co.integrityworks.storagepathgetter
 import android.content.Context
 import android.os.Environment
 import android.os.StatFs
-import java.lang.Math.pow
 import java.text.DecimalFormat
+import kotlin.math.pow
 
 class Utils(context: Context) {
     private val mContext = context
@@ -27,7 +27,6 @@ class Utils(context: Context) {
                         sdCardFilesDirPathList.add(path)
                         return path
                     }
-
                 } else {
                     if (!isExternal) {
                         return path
@@ -63,12 +62,10 @@ class Utils(context: Context) {
             getAvailableSize(path)
         }) {
             in 0 until 1024 -> dfB.format(storageSize)
-            in 1024 until pow(1024.0, 2.0).toInt() -> dfKb.format(storageSize / 1024)
-            in pow(1024.0, 2.0).toInt() until pow(
-                1024.0,
-                3.0
-            ).toInt() -> dfMb.format(storageSize / pow(1024.0, 2.0))
-            else -> dfGb.format(storageSize / pow(1024.0, 3.0))
+            in 1024 until 1024.0.pow(2.0).toInt() -> dfKb.format(storageSize / 1024)
+            in 1024.0.pow(2.0).toInt() until 1024.0.pow(3.0).toInt()
+            -> dfMb.format(storageSize / 1024.0.pow(2.0))
+            else -> dfGb.format(storageSize / 1024.0.pow(3.0))
         }
     }
 
@@ -79,10 +76,6 @@ class Utils(context: Context) {
         if (path != null) {
             val fs = StatFs(path)
             return fs.totalBytes
-//            val bkSize = fs.blockSizeLong
-//            val bkCount = fs.blockCountLong
-//
-//            size = bkSize * bkCount
         }
         return size
     }
@@ -94,10 +87,6 @@ class Utils(context: Context) {
         if (path != null) {
             val fs = StatFs(path)
             return fs.availableBytes
-//            val blockSize = fs.blockSizeLong
-//            val availableBlockSize = fs.availableBlocksLong
-//
-//            size = blockSize * availableBlockSize
         }
         return size
     }
