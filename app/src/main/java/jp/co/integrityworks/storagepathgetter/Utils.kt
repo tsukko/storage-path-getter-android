@@ -51,6 +51,10 @@ class Utils(context: Context) {
     }
 
     private fun getMemorySize(path: String, isTotal: Boolean): String {
+        if (path.isEmpty()) {
+            return "---"
+        }
+
         val dfB = DecimalFormat("#,###.### B")
         val dfKb = DecimalFormat("#,###.### KB")
         val dfMb = DecimalFormat("#,###.### MB")
