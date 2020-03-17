@@ -8,6 +8,9 @@ import android.util.Base64
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.MobileAds
+import jp.co.integrityworks.storagepathgetter.BuildConfig
 import jp.co.integrityworks.storagepathgetter.R
 import jp.co.integrityworks.storagepathgetter.Utils
 import kotlinx.android.synthetic.main.activity_main.*
@@ -17,12 +20,15 @@ import java.util.zip.InflaterInputStream
 
 
 class MainActivity : AppCompatActivity() {
+    companion object {
+        private val TAG = MainActivity::class.java.simpleName
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-//        aaaaaaa()
+        supportActionBar?.title =
+            if (BuildConfig.DEBUG) getString(R.string.app_name) + " (deb)" else getString(R.string.app_name)
 
         //クリップボードのサービスのインスタンスを取得する
         val mManager: ClipboardManager =
@@ -63,7 +69,15 @@ class MainActivity : AppCompatActivity() {
 //        }
 
         getPathButton.setOnClickListener { init() }
-        clearButton.setOnClickListener { }
+        clearButton.setOnClickListener {
+            internalPathEditText.text.clear()
+            externalPathEditText.text.clear()
+            sizeTextView.text = ""
+        }
+
+        MobileAds.initialize(this, BuildConfig.admob_app_id)
+        val adRequest: AdRequest = AdRequest.Builder().build()
+        adView.loadAd(adRequest)
     }
 
     private fun aaaaaaa() {

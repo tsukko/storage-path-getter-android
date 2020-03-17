@@ -3,6 +3,12 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('../keystore.properties')
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
 android {
     compileSdkVersion 29
     defaultConfig {
@@ -13,26 +19,48 @@ android {
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
-    buildTypes {
+
+    signingConfigs {
         release {
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+            storeFile file(keystoreProperties['storeFile'])
+            storePassword keystoreProperties['storePassword']
+        }
+    }
+
+    buildTypes {
+        debug {
+            applicationIdSuffix ".deb"
+            manifestPlaceholders = [admob_app_id: project.property("admobAppIdDebug")]
+            buildConfigField("String", "admob_app_id", "\"{$admobAppIdDebug}\"")
+            resValue "string", "ad_unit_id", "$admobUnitIdforDebug"
+        }
+        release {
+            signingConfig signingConfigs.release
             minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            manifestPlaceholders = [admob_app_id: project.property("admobAppIdStoragePath")]
+            buildConfigField("String", "admob_app_id", "\"{$admobAppIdStoragePath}\"")
+            resValue "string", "ad_unit_id", "$admobUnitIdStoragePathBanner"
         }
     }
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    testImplementation 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.13'
 
     implementation 'androidx.appcompat:appcompat:1.1.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.0-beta2'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.0-beta4'
     // Android KTX (Kotlin 拡張機能セット、主にコーディング補助)
-    implementation 'androidx.core:core-ktx:1.1.0'
-    implementation 'androidx.fragment:fragment-ktx:1.1.0'
+    implementation 'androidx.core:core-ktx:1.2.0'
+    implementation 'androidx.fragment:fragment-ktx:1.2.2'
 
-    implementation 'androidx.navigation:navigation-runtime-ktx:2.2.0-beta01'
-    implementation 'androidx.navigation:navigation-fragment-ktx:2.2.0-beta01'
-    implementation 'androidx.navigation:navigation-ui-ktx:2.2.0-beta01'
+    implementation 'androidx.navigation:navigation-runtime-ktx:2.3.0-alpha03'
+    implementation 'androidx.navigation:navigation-fragment-ktx:2.3.0-alpha03'
+    implementation 'androidx.navigation:navigation-ui-ktx:2.3.0-alpha03'
+
+    // AdMob
+    implementation 'com.google.android.gms:play-services-ads:19.0.0'
 }
