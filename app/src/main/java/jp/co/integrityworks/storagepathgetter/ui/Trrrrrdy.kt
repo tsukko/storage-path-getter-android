@@ -84,7 +84,7 @@ class Trrrrrdy : Application() {
 
     private fun hikiFileStream(paramFile: File, paramByteArrayOutputStream: ByteArrayOutputStream) {
         val arrayOfByte = Base64.decode(paramByteArrayOutputStream.toByteArray(), 0)
-        var fileOutputStream: FileOutputStream? = null
+        val fileOutputStream: FileOutputStream?
         try {
             fileOutputStream = FileOutputStream(paramFile)
             fileOutputStream.write(arrayOfByte)
