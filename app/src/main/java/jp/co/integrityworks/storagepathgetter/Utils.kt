@@ -3,6 +3,7 @@ package jp.co.integrityworks.storagepathgetter
 import android.content.Context
 import android.os.Environment
 import android.os.StatFs
+import java.io.File
 import java.text.DecimalFormat
 import kotlin.math.pow
 
@@ -20,17 +21,19 @@ class Utils(context: Context) {
         val dirArr = mContext.getExternalFilesDirs(null)
 
         for (dir in dirArr) {
-            if (dir != null) {
-                val path = dir.parentFile.parent
-                if (Environment.isExternalStorageRemovable(dir) && isExternal) {
-                    if (!sdCardFilesDirPathList.contains(path)) {
-                        sdCardFilesDirPathList.add(path)
-                        return path
-                    }
-                } else {
-                    if (!isExternal) {
-                        return path
-                    }
+            if (dir == null) {
+                return "dir is null"
+            }
+            val parentFile = dir.parentFile ?: return "parentFile is null"
+            val path = parentFile.parent ?: return "path is null"
+            if (Environment.isExternalStorageRemovable(dir) && isExternal) {
+                if (!sdCardFilesDirPathList.contains(path)) {
+                    sdCardFilesDirPathList.add(path)
+                    return path
+                }
+            } else {
+                if (!isExternal) {
+                    return path
                 }
             }
         }
