@@ -2,142 +2,130 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     tools:context=".ui.MainActivity">
 
     <TextView
         android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/margin_large"
+        android:layout_marginStart="@dimen/margin_large"
+        android:layout_marginTop="@dimen/margin_xlarge"
         android:text="@string/text_information"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <LinearLayout
-        android:id="@+id/iLayout"
+    <androidx.cardview.widget.CardView
+        android:id="@+id/internalPathCardView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/margin_middle"
-        android:layout_marginTop="@dimen/margin_large"
-        android:layout_marginEnd="@dimen/margin_middle"
-        android:orientation="horizontal"
+        android:layout_margin="@dimen/margin_large"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textView">
+        app:layout_constraintTop_toBottomOf="@+id/textView">
 
-        <TextView
-            android:id="@+id/iTextView"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_weight="1"
-            android:text="@string/text_inner_path" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
-        <Button
-            android:id="@+id/copyInternalButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="@dimen/margin_middle"
-            android:background="@drawable/button_state"
-            android:text="@android:string/copy"
-            android:textColor="@android:color/white" />
-    </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
 
-    <EditText
-        android:id="@+id/internalPathEditText"
-        android:layout_width="match_parent"
+                <TextView
+                    android:id="@+id/internalPathTextView"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/margin_middle"
+                    android:layout_weight="1"
+                    android:text="@string/text_inner_path" />
+
+                <Button
+                    android:id="@+id/copyInternalButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/margin_middle"
+                    android:text="@android:string/copy" />
+            </LinearLayout>
+
+            <EditText
+                android:id="@+id/internalPathEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/margin_middle"
+                android:ems="10"
+                android:inputType="text"
+                android:text="@string/text_none" />
+
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/externalPathCardView"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/margin_middle"
-        android:focusable="false"
-        android:inputType=""
-        android:text="@string/text_none"
+        android:layout_margin="@dimen/margin_large"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/iLayout" />
+        app:layout_constraintTop_toBottomOf="@+id/internalPathCardView">
 
-    <View
-        android:id="@+id/view"
-        android:layout_width="wrap_content"
-        android:layout_height="1dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/internalPathEditText" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
-    <LinearLayout
-        android:id="@+id/eLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/margin_middle"
-        android:layout_marginTop="@dimen/margin_large"
-        android:layout_marginEnd="@dimen/margin_middle"
-        android:orientation="horizontal"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/view">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/eTextView"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_weight="1"
-            android:text="@string/text_external_path" />
+                <TextView
+                    android:id="@+id/externalPathTextView"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/margin_middle"
+                    android:layout_weight="1"
+                    android:text="@string/text_external_path" />
 
-        <Button
-            android:id="@+id/copyExternalButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="@dimen/margin_middle"
-            android:background="@drawable/button_state"
-            android:text="@android:string/copy"
-            android:textColor="@android:color/white" />
-    </LinearLayout>
+                <Button
+                    android:id="@+id/copyExternalButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/margin_middle"
+                    android:text="@android:string/copy" />
+            </LinearLayout>
 
-    <EditText
-        android:id="@+id/externalPathEditText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/margin_middle"
-        android:focusable="false"
-        android:inputType=""
-        android:text="@string/text_none"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/eLayout" />
+            <EditText
+                android:id="@+id/externalPathEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/margin_middle"
+                android:ems="10"
+                android:inputType="text"
+                android:text="@string/text_none" />
+
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
 
     <TextView
         android:id="@+id/sizeTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/margin_middle"
-        android:layout_marginTop="@dimen/margin_large"
-        android:layout_marginEnd="@dimen/margin_middle"
-        android:text="@string/text_none"
+        android:layout_margin="@dimen/margin_large"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/externalPathEditText" />
-
-    <!--    <com.google.android.material.bottomnavigation.BottomNavigationView-->
-    <!--            android:id="@+id/bottomNavigation"-->
-    <!--            android:layout_width="match_parent"-->
-    <!--            android:layout_height="wrap_content"-->
-    <!--            android:layout_gravity="bottom"-->
-    <!--            android:layout_margin="@dimen/margin_large"-->
-    <!--            android:background="@drawable/button_navigation_background"-->
-    <!--            app:labelVisibilityMode="unlabeled"-->
-    <!--            app:layout_constraintBottom_toBottomOf="parent"-->
-    <!--            app:layout_constraintEnd_toEndOf="parent"-->
-    <!--            app:layout_constraintStart_toStartOf="parent"-->
-    <!--            app:menu="@menu/my_navigation_items" />-->
+        app:layout_constraintTop_toBottomOf="@+id/externalPathCardView" />
 
     <LinearLayout
-        android:id="@+id/bLayout"
-        android:layout_width="match_parent"
+        android:id="@+id/bottom_linearLayout"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/margin_middle"
-        android:layout_marginEnd="@dimen/margin_middle"
         android:orientation="horizontal"
         app:layout_constraintBottom_toTopOf="@+id/adView"
         app:layout_constraintEnd_toEndOf="parent"
@@ -145,40 +133,37 @@
 
         <Button
             android:id="@+id/getPathButton"
-            style="?android:attr/buttonBarButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/margin_middle"
+            android:layout_marginStart="@dimen/margin_large"
+            android:layout_marginTop="@dimen/margin_large"
             android:layout_marginEnd="@dimen/margin_middle"
-            android:layout_marginBottom="@dimen/margin_small"
+            android:layout_marginBottom="@dimen/margin_large"
             android:layout_weight="1"
-            android:background="@drawable/button_state"
-            android:text="@string/text_reacquire"
-            android:textColor="@android:color/white"
-            app:layout_constraintBottom_toBottomOf="parent" />
+            android:text="@string/text_reacquire" />
 
         <Button
             android:id="@+id/clearButton"
-            style="?android:attr/buttonBarButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/margin_middle"
-            android:layout_marginEnd="@dimen/margin_middle"
-            android:layout_marginBottom="@dimen/margin_small"
+            android:layout_marginTop="@dimen/margin_large"
+            android:layout_marginEnd="@dimen/margin_large"
+            android:layout_marginBottom="@dimen/margin_large"
             android:layout_weight="1"
-            android:background="@drawable/button_state"
-            android:text="@string/text_clear"
-            android:textColor="@android:color/white"
-            app:layout_constraintBottom_toBottomOf="parent" />
+            android:text="@string/text_clear" />
     </LinearLayout>
 
-    <com.google.android.gms.ads.AdView xmlns:ads="http://schemas.android.com/apk/res-auto"
+    <com.google.android.gms.ads.AdView
         android:id="@+id/adView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        ads:adSize="SMART_BANNER"
-        ads:adUnitId="@string/ad_unit_id"
+        android:layout_marginBottom="@dimen/margin_middle"
+        app:adSize="SMART_BANNER"
+        app:adUnitId="@string/ad_unit_id"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
+    <!--        app:adUnitId="@string/ad_unit_id"-->
+
 </androidx.constraintlayout.widget.ConstraintLayout>
