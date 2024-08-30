@@ -58,7 +58,7 @@ android {
             buildConfigField(
                 "String",
                 "admob_app_id",
-                project.properties["admobAppIdStoragePath"] as String
+                '"' + "${project.properties["admobAppIdStoragePath"] ?: ""}" + '"'
             )
             resValue(
                 "string",

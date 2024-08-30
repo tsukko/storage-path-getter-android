@@ -72,7 +72,6 @@ class MainActivity : AppCompatActivity() {
             binding.sizeTextView.text = ""
         }
 
-        // MobileAds.initialize(this, BuildConfig.admob_app_id)
         MobileAds.initialize(this) { initializationStatus: InitializationStatus ->
             /* get the adapter status */
             val map =
@@ -104,8 +103,8 @@ class MainActivity : AppCompatActivity() {
         binding.sizeTextView.text = util.getMemoryInformation(internalPath, externalPath)
 
         // 使用状況アクセス権限をリクエスト
-        util.requestUsageStatsPermission(this)
-        val appUsageMap = util.getAppStorageUsage(applicationContext)
-        Logger.debug(TAG, appUsageMap.toString())
+//        util.requestUsageStatsPermission(this)
+//        val appUsageMap = util.getAppStorageUsage(applicationContext)
+//        Logger.debug(TAG, appUsageMap.toString())
     }
 }
