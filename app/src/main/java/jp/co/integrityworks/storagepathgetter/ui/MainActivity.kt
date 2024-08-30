@@ -5,7 +5,10 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.os.Bundle
 import android.widget.Toast
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.initialization.InitializationStatus
@@ -14,7 +17,6 @@ import jp.co.integrityworks.storagepathgetter.Logger
 import jp.co.integrityworks.storagepathgetter.R
 import jp.co.integrityworks.storagepathgetter.Utils
 import jp.co.integrityworks.storagepathgetter.databinding.ActivityMainBinding
-
 
 class MainActivity : AppCompatActivity() {
     companion object {
@@ -25,9 +27,18 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         Logger.debug(TAG, "onCreate")
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        enableEdgeToEdge()
+//        setContentView(R.layout.activity_main)
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
 
         supportActionBar?.title =
             if (BuildConfig.DEBUG) getString(R.string.app_name) + " (deb)" else getString(R.string.app_name)
@@ -54,22 +65,6 @@ class MainActivity : AppCompatActivity() {
             ).show()
         }
 
-//        bottomNavigation.setOnNavigationItemSelectedListener { item ->
-//            when (item.itemId) {
-//                R.id.navigationHint -> {
-//                    true
-//                }
-//                R.id.navigationClear -> {
-//                    true
-//                }
-//                R.id.navigationReacquire -> {
-//                    init()
-//                    true
-//                }
-//                else -> false
-//            }
-//        }
-
         binding.getPathButton.setOnClickListener { init() }
         binding.clearButton.setOnClickListener {
             binding.internalPathEditText.text?.clear()
@@ -77,7 +72,6 @@ class MainActivity : AppCompatActivity() {
             binding.sizeTextView.text = ""
         }
 
-//        MobileAds.initialize(this, BuildConfig.admob_app_id)
         MobileAds.initialize(this) { initializationStatus: InitializationStatus ->
             /* get the adapter status */
             val map =
@@ -89,6 +83,7 @@ class MainActivity : AppCompatActivity() {
                 )
             }
         }
+
         val adRequest: AdRequest = AdRequest.Builder().build()
         binding.adView.loadAd(adRequest)
     }
@@ -99,12 +94,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun init() {
-        Logger.debug(TAG, "init")
+        Logger.debug(TAG, "init()")
         val util = Utils(applicationContext)
         val internalPath = util.getPath(false)
         val externalPath = util.getPath(true)
         binding.internalPathEditText.setText(internalPath)
         binding.externalPathEditText.setText(externalPath)
         binding.sizeTextView.text = util.getMemoryInformation(internalPath, externalPath)
+
+        // 使用状況アクセス権限をリクエスト
+//        util.requestUsageStatsPermission(this)
+//        val appUsageMap = util.getAppStorageUsage(applicationContext)
+//        Logger.debug(TAG, appUsageMap.toString())
     }
 }

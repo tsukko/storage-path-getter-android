@@ -1,11 +1,30 @@
 package jp.co.integrityworks.storagepathgetter
 
+import android.app.AlertDialog
+import android.app.AppOpsManager
+import android.app.usage.StorageStats
+import android.app.usage.StorageStatsManager
+import android.app.usage.UsageStatsManager
 import android.content.Context
+import android.content.Intent
+import android.content.pm.ApplicationInfo
+import android.os.Build
 import android.os.Environment
 import android.os.StatFs
-import java.io.File
+import android.os.storage.StorageManager
+import android.provider.Settings
 import java.text.DecimalFormat
 import kotlin.math.pow
+
+data class AppInfo(
+    val flags: Int,
+    val name: String,
+    val packageName: String,
+    val size: Long,
+    val installDate: Long,
+    val lastUpdateDate: Long,
+    val lastUsedDate: Long?
+)
 
 class Utils(context: Context) {
     private val mContext = context
@@ -96,5 +115,98 @@ class Utils(context: Context) {
             return fs.availableBytes
         }
         return size
+    }
+
+
+
+    fun checkUsageStatsPermission(context: Context): Boolean {
+        val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
+        val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            appOps.unsafeCheckOpNoThrow(
+                AppOpsManager.OPSTR_GET_USAGE_STATS,
+                android.os.Process.myUid(),
+                context.packageName
+            )
+        } else {
+            appOps.checkOpNoThrow(
+                AppOpsManager.OPSTR_GET_USAGE_STATS,
+                android.os.Process.myUid(),
+                context.packageName
+            )
+        }
+        return mode == AppOpsManager.MODE_ALLOWED
+    }
+
+    fun requestUsageStatsPermission(context: Context) {
+        if (!checkUsageStatsPermission(context)) {
+            AlertDialog.Builder(context)
+                .setTitle("権限が必要です")
+                .setMessage("アプリが動作するためには、使用状況アクセスの権限が必要です。権限を設定してください。")
+                .setPositiveButton("設定を開く") { _, _ ->
+                    val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
+                    context.startActivity(intent)
+                }
+                .setNegativeButton("キャンセル", null)
+                .show()
+        }
+    }
+
+    fun getAppStorageUsage(context: Context): List<AppInfo> {
+        Logger.debug("getAppStorageUsage", "getAppStorageUsage()")
+
+        val appList = mutableListOf<AppInfo>()
+        val user = android.os.Process.myUserHandle();
+
+        val storageStatsManager = context.getSystemService(Context.STORAGE_STATS_SERVICE) as StorageStatsManager
+        val packageManager = context.packageManager
+        val packageList = packageManager.getInstalledPackages(0)
+
+        packageList.forEach { packageInfo ->
+            val applicationInfo = packageInfo.applicationInfo
+
+            // ユーザーがインストールしたアプリのみを対象にする
+            if ((applicationInfo?.flags ?: 0) and ApplicationInfo.FLAG_SYSTEM == 0) {
+                try {
+                    val storageStats: StorageStats = storageStatsManager.queryStatsForPackage(
+                        StorageManager.UUID_DEFAULT,
+                        packageInfo.packageName,
+                        user
+                    )
+
+                    val totalBytes =
+                        storageStats.dataBytes + storageStats.cacheBytes + storageStats.appBytes
+                    val appName = packageManager.getApplicationLabel(applicationInfo!!).toString()
+
+                    // インストール日と最終更新日
+                    val installDate = packageInfo.firstInstallTime
+                    val lastUpdateDate = packageInfo.lastUpdateTime
+
+                    // 最終起動日 (Android 10 以降)
+                    val usageStatsManager = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+                    val lastUsedDate = usageStatsManager.queryAndAggregateUsageStats(
+                        System.currentTimeMillis() - 1000L * 60 * 60 * 24 * 7,  // 1週間分のデータを取得
+                        System.currentTimeMillis()
+                    )[packageInfo.packageName]?.lastTimeUsed
+
+                    appList.add(AppInfo(
+                        applicationInfo.flags,
+                        appName,
+                        packageInfo.packageName,
+                        totalBytes,
+                        installDate,
+                        lastUpdateDate,
+                        lastUsedDate
+                    ))
+                } catch (e: Exception) {
+                    Logger.error(
+                        "StorageUsage",
+                        "Error retrieving storage info for package: ${packageInfo.packageName}",
+                        e
+                    )
+                }
+            }
+        }
+
+        return appList
     }
 }
