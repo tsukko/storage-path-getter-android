@@ -95,12 +95,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun init() {
-        Logger.debug(TAG, "init")
+        Logger.debug(TAG, "init()")
         val util = Utils(applicationContext)
         val internalPath = util.getPath(false)
         val externalPath = util.getPath(true)
         binding.internalPathEditText.setText(internalPath)
         binding.externalPathEditText.setText(externalPath)
         binding.sizeTextView.text = util.getMemoryInformation(internalPath, externalPath)
+
+        // 使用状況アクセス権限をリクエスト
+        util.requestUsageStatsPermission(this)
+        val appUsageMap = util.getAppStorageUsage(applicationContext)
+        Logger.debug(TAG, appUsageMap.toString())
     }
 }
