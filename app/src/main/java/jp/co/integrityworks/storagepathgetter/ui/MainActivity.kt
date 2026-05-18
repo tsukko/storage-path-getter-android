@@ -1,11 +1,16 @@
 package jp.co.integrityworks.storagepathgetter.ui
 
+import android.app.AlertDialog
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -24,6 +29,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     private lateinit var binding: ActivityMainBinding
+    private val util by lazy { Utils(applicationContext) }
+
+    // 設定画面から戻ってきた時のコールバック
+    private val startForResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        if (util.hasUsageStatsPermission()) {
+            loadData()
+        } else {
+            Toast.makeText(this, "権限が許可されませんでした", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -94,16 +109,39 @@ class MainActivity : AppCompatActivity() {
 
     private fun init() {
         Logger.debug(TAG, "init()")
-        val util = Utils(applicationContext)
+        checkPermissionAndLoadData()
+    }
+
+    private fun checkPermissionAndLoadData() {
+        if (util.hasUsageStatsPermission()) {
+            loadData()
+        } else {
+            showPermissionDialog()
+        }
+    }
+
+    private fun showPermissionDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("権限が必要です")
+            .setMessage("アプリの使用状況を取得するために、設定画面で「使用状況へのアクセス」を許可してください。")
+            .setPositiveButton("設定を開く") { _, _ ->
+                val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS).apply {
+                    data = Uri.fromParts("package", packageName, null)
+                }
+                startForResult.launch(intent)
+            }
+            .setNegativeButton("キャンセル", null)
+            .show()
+    }
+
+    private fun loadData() {
         val internalPath = util.getPath(false)
         val externalPath = util.getPath(true)
         binding.internalPathEditText.setText(internalPath)
         binding.externalPathEditText.setText(externalPath)
         binding.sizeTextView.text = util.getMemoryInformation(internalPath, externalPath)
 
-        // 使用状況アクセス権限をリクエスト
-//        util.requestUsageStatsPermission(this)
-//        val appUsageMap = util.getAppStorageUsage(applicationContext)
-//        Logger.debug(TAG, appUsageMap.toString())
+        val appUsageList = util.getAppStorageUsage()
+        Logger.debug(TAG, appUsageList.toString())
     }
 }

@@ -1,59 +1,35 @@
 package jp.co.integrityworks.storagepathgetter
 
-import android.app.AlertDialog
 import android.app.AppOpsManager
 import android.app.usage.StorageStats
 import android.app.usage.StorageStatsManager
 import android.app.usage.UsageStatsManager
 import android.content.Context
-import android.content.Intent
 import android.content.pm.ApplicationInfo
-import android.os.Build
 import android.os.Environment
 import android.os.StatFs
 import android.os.storage.StorageManager
-import android.provider.Settings
+import jp.co.integrityworks.storagepathgetter.model.AppInfo
 import java.text.DecimalFormat
 import kotlin.math.pow
 
-data class AppInfo(
-    val flags: Int,
-    val name: String,
-    val packageName: String,
-    val size: Long,
-    val installDate: Long,
-    val lastUpdateDate: Long,
-    val lastUsedDate: Long?
-)
-
-class Utils(context: Context) {
-    private val mContext = context
+class Utils(private val context: Context) {
 
     /**
      * ストレージのパスを取得する
      *
      */
     fun getPath(isExternal: Boolean): String {
-        // Listで用意しているが、一つしかない前提で実装
-        // かつ、外部と内部で2回for文を回しているのはいけてない
-        val sdCardFilesDirPathList: MutableList<String> = arrayListOf()
-        val dirArr = mContext.getExternalFilesDirs(null)
+        val dirArr = context.getExternalFilesDirs(null)
 
         for (dir in dirArr) {
-            if (dir == null) {
-                return "dir is null"
-            }
-            val parentFile = dir.parentFile ?: return "parentFile is null"
-            val path = parentFile.parent ?: return "path is null"
+            if (dir == null) continue
+            val parentFile = dir.parentFile ?: continue
+            val path = parentFile.parent ?: continue
             if (Environment.isExternalStorageRemovable(dir) && isExternal) {
-                if (!sdCardFilesDirPathList.contains(path)) {
-                    sdCardFilesDirPathList.add(path)
-                    return path
-                }
-            } else {
-                if (!isExternal) {
-                    return path
-                }
+                return path
+            } else if (!Environment.isExternalStorageRemovable(dir) && !isExternal) {
+                return path
             }
         }
         return ""
@@ -82,14 +58,16 @@ class Utils(context: Context) {
         val dfMb = DecimalFormat("#,###.### MB")
         val dfGb = DecimalFormat("#,###.### GB")
 
-        return when (val storageSize = if (isTotal) {
+        val storageSize = if (isTotal) {
             getTotalSize(path)
         } else {
             getAvailableSize(path)
-        }) {
+        }
+
+        return when (storageSize) {
             in 0 until 1024 -> dfB.format(storageSize)
-            in 1024 until 1024.0.pow(2.0).toInt() -> dfKb.format(storageSize / 1024)
-            in 1024.0.pow(2.0).toInt() until 1024.0.pow(3.0).toInt()
+            in 1024 until 1024.0.pow(2.0).toLong() -> dfKb.format(storageSize / 1024)
+            in 1024.0.pow(2.0).toLong() until 1024.0.pow(3.0).toLong()
             -> dfMb.format(storageSize / 1024.0.pow(2.0))
             else -> dfGb.format(storageSize / 1024.0.pow(3.0))
         }
@@ -97,55 +75,40 @@ class Utils(context: Context) {
 
     // 総容量(トータルサイズ)を取得する
     private fun getTotalSize(path: String?): Long {
-        val size: Long = -1
-
         if (path != null) {
             val fs = StatFs(path)
             return fs.totalBytes
         }
-        return size
+        return -1
     }
 
     // 空き容量(利用可能)を取得する
     private fun getAvailableSize(path: String?): Long {
-        val size: Long = -1
-
         if (path != null) {
             val fs = StatFs(path)
             return fs.availableBytes
         }
-        return size
+        return -1
     }
 
-    fun checkUsageStatsPermission(context: Context): Boolean {
+    /**
+     * 使用状況アクセスの権限があるか確認する
+     */
+    fun hasUsageStatsPermission(): Boolean {
         val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
         val mode = appOps.checkOpNoThrow(
-                AppOpsManager.OPSTR_GET_USAGE_STATS,
-                android.os.Process.myUid(),
-                context.packageName
-            )
+            AppOpsManager.OPSTR_GET_USAGE_STATS,
+            android.os.Process.myUid(),
+            context.packageName
+        )
         return mode == AppOpsManager.MODE_ALLOWED
     }
 
-    fun requestUsageStatsPermission(context: Context) {
-        if (!checkUsageStatsPermission(context)) {
-            AlertDialog.Builder(context)
-                .setTitle("権限が必要です")
-                .setMessage("アプリが動作するためには、使用状況アクセスの権限が必要です。権限を設定してください。")
-                .setPositiveButton("設定を開く") { _, _ ->
-                    val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
-                    context.startActivity(intent)
-                }
-                .setNegativeButton("キャンセル", null)
-                .show()
-        }
-    }
-
-    fun getAppStorageUsage(context: Context): List<AppInfo> {
+    fun getAppStorageUsage(): List<AppInfo> {
         Logger.debug("getAppStorageUsage", "getAppStorageUsage()")
 
         val appList = mutableListOf<AppInfo>()
-        val user = android.os.Process.myUserHandle();
+        val user = android.os.Process.myUserHandle()
 
         val storageStatsManager = context.getSystemService(Context.STORAGE_STATS_SERVICE) as StorageStatsManager
         val packageManager = context.packageManager

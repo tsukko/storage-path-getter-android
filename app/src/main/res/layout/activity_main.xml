@@ -43,10 +43,12 @@
                     android:layout_height="wrap_content"
                     android:layout_margin="@dimen/margin_middle"
                     android:layout_weight="1"
+                    android:labelFor="@+id/internalPathEditText"
                     android:text="@string/text_inner_path" />
 
                 <Button
                     android:id="@+id/copyInternalButton"
+                    style="@style/Widget.Material3.Button.TextButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="@dimen/margin_middle"
@@ -59,8 +61,10 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="@dimen/margin_middle"
                 android:ems="10"
+                android:importantForAutofill="no"
                 android:inputType="text"
-                android:text="@string/text_none" />
+                android:text="@string/text_none"
+                tools:ignore="UnusedAttribute" />
 
         </LinearLayout>
 
@@ -91,10 +95,12 @@
                     android:layout_height="wrap_content"
                     android:layout_margin="@dimen/margin_middle"
                     android:layout_weight="1"
+                    android:labelFor="@+id/externalPathEditText"
                     android:text="@string/text_external_path" />
 
                 <Button
                     android:id="@+id/copyExternalButton"
+                    style="@style/Widget.Material3.Button.TextButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="@dimen/margin_middle"
@@ -107,8 +113,10 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="@dimen/margin_middle"
                 android:ems="10"
+                android:importantForAutofill="no"
                 android:inputType="text"
-                android:text="@string/text_none" />
+                android:text="@string/text_none"
+                tools:ignore="UnusedAttribute" />
 
         </LinearLayout>
     </androidx.cardview.widget.CardView>
@@ -124,6 +132,7 @@
 
     <LinearLayout
         android:id="@+id/bottom_linearLayout"
+        style="?android:attr/buttonBarStyle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -133,6 +142,7 @@
 
         <Button
             android:id="@+id/getPathButton"
+            style="?android:attr/buttonBarButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/margin_large"
@@ -144,6 +154,7 @@
 
         <Button
             android:id="@+id/clearButton"
+            style="?android:attr/buttonBarButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/margin_middle"
