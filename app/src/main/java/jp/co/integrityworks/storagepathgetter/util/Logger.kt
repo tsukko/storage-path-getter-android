@@ -1,7 +1,8 @@
-package jp.co.integrityworks.storagepathgetter
+package jp.co.integrityworks.storagepathgetter.util
 
 import android.util.Log
-
+import jp.co.integrityworks.storagepathgetter.BuildConfig
+import jp.co.integrityworks.storagepathgetter.util.Logger.error
 import java.util.Locale
 
 /**
@@ -92,6 +93,12 @@ object Logger {
         }
         val format = "[%s (L:%d)] %s"
         val element = Throwable().stackTrace[nest]
-        return String.format(Locale.getDefault(), format, element.fileName, element.lineNumber, message)
+        return String.format(
+            Locale.getDefault(),
+            format,
+            element.fileName,
+            element.lineNumber,
+            message
+        )
     }
 }

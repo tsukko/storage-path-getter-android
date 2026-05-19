@@ -1,4 +1,4 @@
-package jp.co.integrityworks.storagepathgetter.model
+package jp.co.integrityworks.storagepathgetter.data.entities
 
 data class AppInfo(
     val flags: Int,

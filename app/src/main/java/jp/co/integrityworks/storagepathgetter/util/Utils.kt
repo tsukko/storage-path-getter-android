@@ -1,4 +1,4 @@
-package jp.co.integrityworks.storagepathgetter
+package jp.co.integrityworks.storagepathgetter.util
 
 import android.app.AppOpsManager
 import android.app.usage.StorageStats
@@ -9,7 +9,7 @@ import android.content.pm.ApplicationInfo
 import android.os.Environment
 import android.os.StatFs
 import android.os.storage.StorageManager
-import jp.co.integrityworks.storagepathgetter.model.AppInfo
+import jp.co.integrityworks.storagepathgetter.data.entities.AppInfo
 import java.text.DecimalFormat
 import kotlin.math.pow
 
@@ -68,7 +68,8 @@ class Utils(private val context: Context) {
             in 0 until 1024 -> dfB.format(storageSize)
             in 1024 until 1024.0.pow(2.0).toLong() -> dfKb.format(storageSize / 1024)
             in 1024.0.pow(2.0).toLong() until 1024.0.pow(3.0).toLong()
-            -> dfMb.format(storageSize / 1024.0.pow(2.0))
+                -> dfMb.format(storageSize / 1024.0.pow(2.0))
+
             else -> dfGb.format(storageSize / 1024.0.pow(3.0))
         }
     }
@@ -110,7 +111,8 @@ class Utils(private val context: Context) {
         val appList = mutableListOf<AppInfo>()
         val user = android.os.Process.myUserHandle()
 
-        val storageStatsManager = context.getSystemService(Context.STORAGE_STATS_SERVICE) as StorageStatsManager
+        val storageStatsManager =
+            context.getSystemService(Context.STORAGE_STATS_SERVICE) as StorageStatsManager
         val packageManager = context.packageManager
         val packageList = packageManager.getInstalledPackages(0)
 
@@ -135,21 +137,24 @@ class Utils(private val context: Context) {
                     val lastUpdateDate = packageInfo.lastUpdateTime
 
                     // 最終起動日 (Android 10 以降)
-                    val usageStatsManager = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+                    val usageStatsManager =
+                        context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
                     val lastUsedDate = usageStatsManager.queryAndAggregateUsageStats(
                         System.currentTimeMillis() - 1000L * 60 * 60 * 24 * 7,  // 1週間分のデータを取得
                         System.currentTimeMillis()
                     )[packageInfo.packageName]?.lastTimeUsed
 
-                    appList.add(AppInfo(
-                        applicationInfo.flags,
-                        appName,
-                        packageInfo.packageName,
-                        totalBytes,
-                        installDate,
-                        lastUpdateDate,
-                        lastUsedDate
-                    ))
+                    appList.add(
+                        AppInfo(
+                            applicationInfo.flags,
+                            appName,
+                            packageInfo.packageName,
+                            totalBytes,
+                            installDate,
+                            lastUpdateDate,
+                            lastUsedDate
+                        )
+                    )
                 } catch (e: Exception) {
                     Logger.error(
                         "StorageUsage",

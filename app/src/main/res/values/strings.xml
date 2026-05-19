@@ -6,5 +6,4 @@
     <string name="text_external_path">Path：外部ストレージ</string>
     <string name="text_reacquire">再取得</string>
     <string name="text_clear">クリア</string>
-    <string name="text_hint">ヒント</string>
 </resources>
