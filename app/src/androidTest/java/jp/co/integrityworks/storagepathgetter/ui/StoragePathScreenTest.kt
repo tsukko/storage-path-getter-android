@@ -1,6 +1,7 @@
 package jp.co.integrityworks.storagepathgetter.ui
 
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.platform.app.InstrumentationRegistry
 import jp.co.integrityworks.storagepathgetter.ui.screens.StoragePathScreen
@@ -30,12 +31,12 @@ class StoragePathScreenTest {
 
         // 画面に「ストレージ情報の取得」に関連するテキストが表示されているか確認
         // (R.string.text_information の内容を確認)
-        composeTestRule.onNodeWithText("ストレージのパス情報を取得します。", substring = true)
+        composeTestRule.onNodeWithText("ご利用の端末のストレージパスを表示します。", substring = true)
             .assertExists()
     }
 
     @Test
-    fun storagePathScreen_DisplaysButtons() {
+    fun storagePathScreen_DisplaysActionIcons() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val utils = Utils(context)
 
@@ -48,8 +49,9 @@ class StoragePathScreenTest {
             }
         }
 
-        // 再取得ボタンとクリアボタンが存在することを確認
-        composeTestRule.onNodeWithText("再取得").assertExists()
-        composeTestRule.onNodeWithText("クリア").assertExists()
+        // トップバーの再取得（Refresh）とクリア（Clear）のアイコンが存在することを確認
+        // contentDescription経由で判定
+        composeTestRule.onNodeWithContentDescription("再取得").assertExists()
+        composeTestRule.onNodeWithContentDescription("クリア").assertExists()
     }
 }

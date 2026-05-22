@@ -44,11 +44,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import jp.co.integrityworks.storagepathgetter.R
 import jp.co.integrityworks.storagepathgetter.data.entities.StorageBreakdown
+import jp.co.integrityworks.storagepathgetter.ui.theme.Dimens
 import java.text.DecimalFormat
 import kotlin.math.pow
 import kotlin.math.roundToInt
@@ -70,13 +73,13 @@ fun PathCard(
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(28.dp),
+        shape = RoundedCornerShape(Dimens.RadiusExtraLarge),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Column(modifier = Modifier.padding(24.dp)) {
+        Column(modifier = Modifier.padding(Dimens.MarginXLarge)) {
             // ヘッダー部分
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -85,19 +88,19 @@ fun PathCard(
                 Surface(
                     shape = CircleShape,
                     color = if (isCritical) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f),
-                    modifier = Modifier.size(48.dp)
+                    modifier = Modifier.size(Dimens.IconLarge)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
                             imageVector = icon,
                             contentDescription = null,
                             tint = if (isCritical) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(Dimens.IconNormal)
                         )
                     }
                 }
                 
-                Spacer(modifier = Modifier.width(16.dp))
+                Spacer(modifier = Modifier.width(Dimens.MarginLarge))
                 
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
@@ -107,7 +110,7 @@ fun PathCard(
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
-                        text = if (usage > 0) "$usagePercent% 使用中" else "情報なし",
+                        text = if (usage > 0) stringResource(id = R.string.label_usage_percent, usagePercent) else stringResource(id = R.string.label_usage_info_none),
                         style = MaterialTheme.typography.bodySmall,
                         color = if (isCritical) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
                     )
@@ -116,8 +119,8 @@ fun PathCard(
                 IconButton(onClick = { onCopy(path) }) {
                     Icon(
                         imageVector = Icons.Default.ContentCopy,
-                        contentDescription = "コピー",
-                        modifier = Modifier.size(20.dp),
+                        contentDescription = stringResource(id = R.string.text_clear),
+                        modifier = Modifier.size(Dimens.IconSmall),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
@@ -126,8 +129,8 @@ fun PathCard(
                     IconButton(onClick = { onOpen(path) }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.OpenInNew,
-                            contentDescription = "開く",
-                            modifier = Modifier.size(20.dp),
+                            contentDescription = null,
+                            modifier = Modifier.size(Dimens.IconSmall),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
@@ -143,7 +146,7 @@ fun PathCard(
                     verticalAlignment = Alignment.Bottom
                 ) {
                     Text(
-                        text = "使用量",
+                        text = stringResource(id = R.string.label_usage),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -161,7 +164,7 @@ fun PathCard(
                     progress = { usage },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(8.dp)
+                        .height(Dimens.ProgressBarHeight)
                         .clip(CircleShape),
                     color = if (isCritical) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
                     trackColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
@@ -175,13 +178,13 @@ fun PathCard(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
+                    .clip(RoundedCornerShape(Dimens.RadiusMedium))
                     .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
                     .clickable { onCopy(path) }
-                    .padding(horizontal = 12.dp, vertical = 10.dp)
+                    .padding(horizontal = Dimens.MarginMedium, vertical = 10.dp)
             ) {
                 Text(
-                    text = path.ifEmpty { "パス情報なし" },
+                    text = path.ifEmpty { stringResource(id = R.string.label_no_path) },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
@@ -191,19 +194,19 @@ fun PathCard(
 
             // 内訳表示（アコーディオン）
             if (usage > 0) {
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(Dimens.MarginLarge))
                 
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(8.dp))
+                        .clip(RoundedCornerShape(Dimens.RadiusSmall))
                         .clickable { expanded = !expanded }
-                        .padding(vertical = 4.dp),
+                        .padding(vertical = Dimens.MarginSmall),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text = if (expanded) "内訳を隠す" else "内訳を表示",
+                        text = if (expanded) stringResource(id = R.string.action_hide_breakdown) else stringResource(id = R.string.action_show_breakdown),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -211,7 +214,7 @@ fun PathCard(
                         imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(Dimens.IconSmall)
                     )
                 }
 
@@ -220,17 +223,17 @@ fun PathCard(
                     enter = expandVertically() + fadeIn(),
                     exit = shrinkVertically() + fadeOut()
                 ) {
-                    Column(modifier = Modifier.padding(top = 16.dp)) {
+                    Column(modifier = Modifier.padding(top = Dimens.MarginLarge)) {
                         HorizontalDivider(
-                            modifier = Modifier.padding(bottom = 16.dp),
+                            modifier = Modifier.padding(bottom = Dimens.MarginLarge),
                             color = MaterialTheme.colorScheme.outlineVariant
                         )
                         
-                        BreakdownRow("画像", breakdown.imageBytes, MaterialTheme.colorScheme.primary)
-                        BreakdownRow("動画", breakdown.videoBytes, MaterialTheme.colorScheme.secondary)
-                        BreakdownRow("音声", breakdown.audioBytes, MaterialTheme.colorScheme.tertiary)
-                        BreakdownRow("アプリ", breakdown.appBytes, MaterialTheme.colorScheme.error)
-                        BreakdownRow("その他", breakdown.otherBytes, MaterialTheme.colorScheme.outline)
+                        BreakdownRow(stringResource(id = R.string.category_image), breakdown.imageBytes, MaterialTheme.colorScheme.primary)
+                        BreakdownRow(stringResource(id = R.string.category_video), breakdown.videoBytes, MaterialTheme.colorScheme.secondary)
+                        BreakdownRow(stringResource(id = R.string.category_audio), breakdown.audioBytes, MaterialTheme.colorScheme.tertiary)
+                        BreakdownRow(stringResource(id = R.string.category_apps), breakdown.appBytes, MaterialTheme.colorScheme.error)
+                        BreakdownRow(stringResource(id = R.string.category_other), breakdown.otherBytes, MaterialTheme.colorScheme.outline)
                     }
                 }
             }
@@ -243,7 +246,7 @@ private fun BreakdownRow(label: String, bytes: Long, color: Color) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
+            .padding(vertical = Dimens.MarginSmall),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
@@ -252,7 +255,7 @@ private fun BreakdownRow(label: String, bytes: Long, color: Color) {
                 .clip(CircleShape)
                 .background(color)
         )
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(Dimens.MarginLarge))
         Text(
             text = label,
             style = MaterialTheme.typography.bodySmall,

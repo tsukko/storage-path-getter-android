@@ -10,21 +10,29 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DeleteSweep
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.SdStorage
 import androidx.compose.material.icons.filled.Smartphone
-import androidx.compose.material3.Button
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -36,6 +44,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
@@ -51,6 +60,7 @@ import jp.co.integrityworks.storagepathgetter.ui.theme.StoragePathGetterTheme
 import jp.co.integrityworks.storagepathgetter.util.Logger
 import jp.co.integrityworks.storagepathgetter.util.Utils
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StoragePathScreen(util: Utils, onRequestPermission: () -> Unit) {
     val context = LocalContext.current
@@ -58,7 +68,6 @@ fun StoragePathScreen(util: Utils, onRequestPermission: () -> Unit) {
 
     var internalPath by remember { mutableStateOf(if (isInspection) "/storage/emulated/0" else "") }
     var externalPath by remember { mutableStateOf(if (isInspection) "/storage/1234-5678" else "") }
-    var memoryInfo by remember { mutableStateOf(if (isInspection) "内部メモリーの利用可能容量:\t10 GB\n内部メモリーの総容量:\t\t\t\t128 GB" else "") }
 
     // 追加: 使用率情報を保持するState
     var internalUsage by remember { mutableFloatStateOf(0f) }
@@ -103,7 +112,11 @@ fun StoragePathScreen(util: Utils, onRequestPermission: () -> Unit) {
                 }
                 context.startActivity(intent)
             } catch (_: Exception) {
-                Toast.makeText(context, "フォルダを開けるアプリが見つかりませんでした", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    context,
+                    context.getString(R.string.msg_no_app_to_open_folder),
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
     }
@@ -115,7 +128,6 @@ fun StoragePathScreen(util: Utils, onRequestPermission: () -> Unit) {
             val ePath = util.getPath(isExternal = true)
             internalPath = iPath
             externalPath = ePath
-            memoryInfo = util.getMemoryInformation(iPath, ePath)
 
             // 追加: 使用率データの取得
             internalUsage = util.getStorageUsageRatio(path = iPath)
@@ -129,9 +141,6 @@ fun StoragePathScreen(util: Utils, onRequestPermission: () -> Unit) {
             selectedFolderUri?.let {
                 recentFiles = util.getRecentFiles(it)
             }
-
-            val appUsageList = util.getAppStorageUsage()
-            Logger.debug("MainActivity", appUsageList.toString())
         } else {
             onRequestPermission()
         }
@@ -146,56 +155,62 @@ fun StoragePathScreen(util: Utils, onRequestPermission: () -> Unit) {
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        text = stringResource(id = R.string.app_name),
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                    )
+                },
+                actions = {
+                    IconButton(onClick = {
+                        internalPath = ""
+                        externalPath = ""
+                        internalUsage = 0f
+                        internalUsageText = ""
+                        internalBreakdown = StorageBreakdown()
+                        externalUsage = 0f
+                        externalUsageText = ""
+                        externalBreakdown = StorageBreakdown()
+                        recentFiles = emptyList()
+                        selectedFolderUri = null
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.DeleteSweep,
+                            contentDescription = stringResource(id = R.string.text_clear)
+                        )
+                    }
+                    IconButton(onClick = { loadData() }) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = stringResource(id = R.string.text_reacquire)
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    actionIconContentColor = MaterialTheme.colorScheme.onSurface,
+                )
+            )
+        },
         bottomBar = {
-            Column(
+            // 広告の表示。ナビゲーションバー（セーフエリア）のパディングを適用
+            AdBanner(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = Dimens.MarginLarge)
-                    .padding(bottom = Dimens.MarginXXXLarge)
-            ) {
-                // ボタン類
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(Dimens.MarginMiddle)
-                ) {
-                    Button(
-                        onClick = { loadData() },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(text = stringResource(id = R.string.text_reacquire))
-                    }
-                    Button(
-                        onClick = {
-                            internalPath = ""
-                            externalPath = ""
-                            memoryInfo = ""
-                            internalUsage = 0f
-                            internalUsageText = ""
-                            internalBreakdown = StorageBreakdown()
-                            externalUsage = 0f
-                            externalUsageText = ""
-                            externalBreakdown = StorageBreakdown()
-                            recentFiles = emptyList()
-                            selectedFolderUri = null
-                        },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(text = stringResource(id = R.string.text_clear))
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(Dimens.MarginLarge))
-
-                // 広告の表示
-                AdBanner(modifier = Modifier.fillMaxWidth())
-            }
+                    .padding(WindowInsets.navigationBars.asPaddingValues())
+            )
         }
     ) { innerPadding ->
         Column(
             modifier = Modifier
-                .padding(innerPadding)
-                .padding(Dimens.MarginLarge)
-                .verticalScroll(rememberScrollState()),
+                .fillMaxSize()
+                .padding(innerPadding) // Scaffoldの標準パディングを適用
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = Dimens.MarginLarge)
+                .padding(top = Dimens.MarginLarge),
             verticalArrangement = Arrangement.spacedBy(Dimens.MarginXLarge)
         ) {
             Text(
@@ -227,17 +242,14 @@ fun StoragePathScreen(util: Utils, onRequestPermission: () -> Unit) {
                 onOpen = { openFolder(it) }
             )
 
-            // メモリ情報
-            Text(
-                text = memoryInfo,
-                style = MaterialTheme.typography.bodyMedium
-            )
-
             // 最近のファイル
             RecentFilesCard(
                 files = recentFiles,
                 onSelectFolder = { folderPickerLauncher.launch(null) }
             )
+
+            // 最後に少しだけ余白を持たせて広告との境界を綺麗にする
+            Spacer(modifier = Modifier.height(Dimens.MarginMiddle))
         }
     }
 }

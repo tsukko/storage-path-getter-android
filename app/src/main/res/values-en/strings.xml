@@ -1,0 +1,29 @@
+<resources>
+    <string name="app_name">Storage Path Getter</string>
+    <string name="text_information">Displays storage paths of your device.</string>
+    <string name="text_inner_path">Internal Storage</string>
+    <string name="text_none">None</string>
+    <string name="text_external_path">External Storage</string>
+    <string name="text_reacquire">Refresh</string>
+    <string name="text_clear">Clear</string>
+
+    <!-- Storage Breakdown -->
+    <string name="label_usage">Usage</string>
+    <string name="label_usage_info_none">No info</string>
+    <string name="label_usage_percent">%1$d%% Used</string>
+    <string name="action_show_breakdown">Show details</string>
+    <string name="action_hide_breakdown">Hide details</string>
+    <string name="category_image">Images</string>
+    <string name="category_video">Videos</string>
+    <string name="category_audio">Audio</string>
+    <string name="category_apps">Apps</string>
+    <string name="category_other">Other</string>
+
+    <!-- Recent Files -->
+    <string name="title_recent_files">Recent Files (24h)</string>
+    <string name="msg_select_folder">Please select a folder</string>
+    <string name="action_select_folder">Select Folder</string>
+    <string name="label_other_files">%1$d other files...</string>
+    <string name="label_no_path">No path info</string>
+    <string name="msg_no_app_to_open_folder">No app found to open the folder</string>
+</resources>

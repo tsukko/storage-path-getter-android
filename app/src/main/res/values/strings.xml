@@ -1,9 +1,29 @@
 <resources>
-    <string name="app_name">StoragePathGetter</string>
+    <string name="app_name">ストレージパス取得</string>
     <string name="text_information">ご利用の端末のストレージパスを表示します。</string>
     <string name="text_inner_path">内部ストレージ</string>
     <string name="text_none">なし</string>
     <string name="text_external_path">外部ストレージ</string>
     <string name="text_reacquire">再取得</string>
     <string name="text_clear">クリア</string>
+
+    <!-- 追加: ストレージ内訳関連 -->
+    <string name="label_usage">使用量</string>
+    <string name="label_usage_info_none">情報なし</string>
+    <string name="label_usage_percent">%1$d%% 使用中</string>
+    <string name="action_show_breakdown">内訳を表示</string>
+    <string name="action_hide_breakdown">内訳を隠す</string>
+    <string name="category_image">画像</string>
+    <string name="category_video">動画</string>
+    <string name="category_audio">音声</string>
+    <string name="category_apps">アプリ</string>
+    <string name="category_other">その他</string>
+
+    <!-- 追加: 最近のファイル関連 -->
+    <string name="title_recent_files">最近のファイル (24時間以内)</string>
+    <string name="msg_select_folder">対象のフォルダを選択してください</string>
+    <string name="action_select_folder">フォルダを選択</string>
+    <string name="label_other_files">他 %1$d 件のファイル...</string>
+    <string name="label_no_path">パス情報なし</string>
+    <string name="msg_no_app_to_open_folder">フォルダを開けるアプリが見つかりませんでした</string>
 </resources>

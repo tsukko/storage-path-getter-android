@@ -11,8 +11,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.InsertDriveFile
 import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.InsertDriveFile
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -23,10 +23,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import jp.co.integrityworks.storagepathgetter.R
 import jp.co.integrityworks.storagepathgetter.data.entities.RecentFile
+import jp.co.integrityworks.storagepathgetter.ui.theme.Dimens
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -41,28 +44,28 @@ fun RecentFilesCard(
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(28.dp),
+        shape = RoundedCornerShape(Dimens.RadiusExtraLarge),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Column(modifier = Modifier.padding(24.dp)) {
+        Column(modifier = Modifier.padding(Dimens.MarginXLarge)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = Icons.Default.History,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(Dimens.IconNormal)
                 )
-                Spacer(modifier = Modifier.width(12.dp))
+                Spacer(modifier = Modifier.width(Dimens.MarginLarge))
                 Text(
-                    text = "最近のファイル (24時間以内)",
+                    text = stringResource(id = R.string.title_recent_files),
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(Dimens.MarginLarge))
 
             if (files.isEmpty()) {
                 Column(
@@ -70,27 +73,27 @@ fun RecentFilesCard(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "対象のフォルダを選択してください",
+                        text = stringResource(id = R.string.msg_select_folder),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(Dimens.MarginLarge))
                     Button(onClick = onSelectFolder) {
-                        Text("フォルダを選択")
+                        Text(stringResource(id = R.string.action_select_folder))
                     }
                 }
             } else {
                 files.take(5).forEach { file ->
                     RecentFileItem(file)
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(Dimens.MarginMiddle))
                 }
                 
                 if (files.size > 5) {
                     Text(
-                        text = "他 ${files.size - 5} 件のファイル...",
+                        text = stringResource(id = R.string.label_other_files, files.size - 5),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(top = 4.dp)
+                        modifier = Modifier.padding(top = Dimens.MarginSmall)
                     )
                 }
             }
@@ -103,18 +106,18 @@ private fun RecentFileItem(file: RecentFile) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(Dimens.RadiusMedium))
             .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
-            .padding(12.dp),
+            .padding(Dimens.MarginMedium),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
-            imageVector = Icons.Default.InsertDriveFile,
+            imageVector = Icons.AutoMirrored.Filled.InsertDriveFile,
             contentDescription = null,
-            modifier = Modifier.size(20.dp),
+            modifier = Modifier.size(Dimens.IconSmall),
             tint = MaterialTheme.colorScheme.primary
         )
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(Dimens.MarginLarge))
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = file.name,
@@ -128,7 +131,7 @@ private fun RecentFileItem(file: RecentFile) {
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(Dimens.MarginMiddle))
                 Text(
                     text = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(file.lastModified)),
                     style = MaterialTheme.typography.labelSmall,
@@ -144,7 +147,7 @@ private fun formatBytes(bytes: Long): String {
     val dfGb = DecimalFormat("#,###.## GB")
     val dfMb = DecimalFormat("#,###.## MB")
     val dfKb = DecimalFormat("#,###.## KB")
-    
+
     return when {
         bytes >= 1024.0.pow(3.0) -> dfGb.format(bytes / 1024.0.pow(3.0))
         bytes >= 1024.0.pow(2.0) -> dfMb.format(bytes / 1024.0.pow(2.0))

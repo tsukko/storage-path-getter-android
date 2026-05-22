@@ -7,7 +7,4 @@ data class StorageBreakdown(
     val appBytes: Long = 0L,
     val otherBytes: Long = 0L,
     val totalBytes: Long = 0L
-) {
-    val totalUsedBytes: Long
-        get() = imageBytes + videoBytes + audioBytes + appBytes + otherBytes
-}
+)

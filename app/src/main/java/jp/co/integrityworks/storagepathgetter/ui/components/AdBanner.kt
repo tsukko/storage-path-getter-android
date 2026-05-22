@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -20,6 +21,7 @@ import jp.co.integrityworks.storagepathgetter.R
 
 @Composable
 fun AdBanner(modifier: Modifier = Modifier) {
+    val context = LocalContext.current
     if (LocalInspectionMode.current) {
         // プレビュー用のプレースホルダーを表示
         Box(
@@ -37,9 +39,14 @@ fun AdBanner(modifier: Modifier = Modifier) {
     val adUnitId = stringResource(id = R.string.ad_unit_id)
     AndroidView(
         modifier = modifier,
-        factory = { context ->
-            AdView(context).apply {
-                setAdSize(AdSize.BANNER)
+        factory = {
+            AdView(it).apply {
+                // アダプティブバナーのサイズを正確に計算
+                val displayMetrics = context.resources.displayMetrics
+                val widthInDp = (displayMetrics.widthPixels / displayMetrics.density).toInt()
+                val adSize = AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(it, widthInDp)
+
+                setAdSize(adSize)
                 this.adUnitId = adUnitId
                 loadAd(AdRequest.Builder().build())
             }
