@@ -2,9 +2,7 @@ package jp.co.integrityworks.storagepathgetter.util
 
 import android.app.AppOpsManager
 import android.app.usage.StorageStatsManager
-import android.app.usage.UsageStatsManager
 import android.content.Context
-import android.content.pm.ApplicationInfo
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
@@ -76,9 +74,10 @@ class Utils(private val context: Context) {
     fun getStorageBreakdown(path: String): StorageBreakdown {
         if (path.isEmpty()) return StorageBreakdown()
 
-        val storageStatsManager = context.getSystemService(Context.STORAGE_STATS_SERVICE) as StorageStatsManager
+        val storageStatsManager =
+            context.getSystemService(Context.STORAGE_STATS_SERVICE) as StorageStatsManager
         val storageManager = context.getSystemService(Context.STORAGE_SERVICE) as StorageManager
-        
+
         return try {
             val uuid: UUID = if (path.contains("emulated/0")) {
                 StorageManager.UUID_DEFAULT
@@ -91,7 +90,7 @@ class Utils(private val context: Context) {
                         volume.directory?.absolutePath
                     } else {
                         // API 29用のフォールバック（リフレクションまたは簡易判定）
-                        null 
+                        null
                     }
                     if (volumePath != null && path.startsWith(volumePath)) {
                         val uuidStr = volume.uuid
@@ -104,7 +103,10 @@ class Utils(private val context: Context) {
                 foundUuid
             }
 
-            val stats = storageStatsManager.queryExternalStatsForUser(uuid, android.os.Process.myUserHandle())
+            val stats = storageStatsManager.queryExternalStatsForUser(
+                uuid,
+                android.os.Process.myUserHandle()
+            )
             val total = getTotalSize(path)
             val available = getAvailableSize(path)
             val usedTotal = total - available
@@ -117,7 +119,9 @@ class Utils(private val context: Context) {
                 audioBytes = stats.audioBytes,
                 appBytes = stats.appBytes,
                 totalBytes = total,
-                otherBytes = (usedTotal - (stats.imageBytes + stats.videoBytes + stats.audioBytes + stats.appBytes)).coerceAtLeast(0)
+                otherBytes = (usedTotal - (stats.imageBytes + stats.videoBytes + stats.audioBytes + stats.appBytes)).coerceAtLeast(
+                    0
+                )
             )
         } catch (e: Exception) {
             Logger.error("Utils", "Error getting storage breakdown", e)
@@ -131,10 +135,10 @@ class Utils(private val context: Context) {
     fun getRecentFiles(directoryUri: Uri): List<RecentFile> {
         val recentFiles = mutableListOf<RecentFile>()
         val root = DocumentFile.fromTreeUri(context, directoryUri) ?: return emptyList()
-        
+
         val now = System.currentTimeMillis()
         val twentyFourHoursAgo = now - (24 * 60 * 60 * 1000L)
-        
+
         // 再帰的に探索せず、直下のファイルのみを対象とする
         root.listFiles().forEach { file ->
             if (file.isFile && file.lastModified() >= twentyFourHoursAgo) {
@@ -148,7 +152,7 @@ class Utils(private val context: Context) {
                 )
             }
         }
-        
+
         return recentFiles.sortedByDescending { it.lastModified }
     }
 

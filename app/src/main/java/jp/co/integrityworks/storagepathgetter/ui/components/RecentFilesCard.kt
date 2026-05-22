@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -33,7 +34,6 @@ import jp.co.integrityworks.storagepathgetter.ui.theme.Dimens
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.Date
-import java.util.Locale
 import kotlin.math.pow
 
 @Composable
@@ -87,7 +87,7 @@ fun RecentFilesCard(
                     RecentFileItem(file)
                     Spacer(modifier = Modifier.height(Dimens.MarginMiddle))
                 }
-                
+
                 if (files.size > 5) {
                     Text(
                         text = stringResource(id = R.string.label_other_files, files.size - 5),
@@ -103,6 +103,8 @@ fun RecentFilesCard(
 
 @Composable
 private fun RecentFileItem(file: RecentFile) {
+    val configuration = LocalConfiguration.current
+    val locale = configuration.locales[0]
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -133,7 +135,10 @@ private fun RecentFileItem(file: RecentFile) {
                 )
                 Spacer(modifier = Modifier.width(Dimens.MarginMiddle))
                 Text(
-                    text = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(file.lastModified)),
+                    text = SimpleDateFormat(
+                        "HH:mm",
+                        locale
+                    ).format(Date(file.lastModified)),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

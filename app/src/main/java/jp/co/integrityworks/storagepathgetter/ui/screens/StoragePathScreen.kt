@@ -10,6 +10,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -18,10 +19,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DeleteSweep
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.SdStorage
 import androidx.compose.material.icons.filled.Smartphone
@@ -31,6 +36,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -40,13 +46,13 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import jp.co.integrityworks.storagepathgetter.R
 import jp.co.integrityworks.storagepathgetter.data.entities.RecentFile
@@ -57,7 +63,6 @@ import jp.co.integrityworks.storagepathgetter.ui.components.PathCard
 import jp.co.integrityworks.storagepathgetter.ui.components.RecentFilesCard
 import jp.co.integrityworks.storagepathgetter.ui.theme.Dimens
 import jp.co.integrityworks.storagepathgetter.ui.theme.StoragePathGetterTheme
-import jp.co.integrityworks.storagepathgetter.util.Logger
 import jp.co.integrityworks.storagepathgetter.util.Utils
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -96,6 +101,9 @@ fun StoragePathScreen(util: Utils, onRequestPermission: () -> Unit) {
         }
     }
 
+    // フォルダを開く際のエラーメッセージをCompose側で取得
+    val noAppFoundMsg = stringResource(id = R.string.msg_no_app_to_open_folder)
+
     // フォルダを開く関数
     val openFolder = { path: String ->
         try {
@@ -114,7 +122,7 @@ fun StoragePathScreen(util: Utils, onRequestPermission: () -> Unit) {
             } catch (_: Exception) {
                 Toast.makeText(
                     context,
-                    context.getString(R.string.msg_no_app_to_open_folder),
+                    noAppFoundMsg,
                     Toast.LENGTH_SHORT
                 ).show()
             }
@@ -213,10 +221,8 @@ fun StoragePathScreen(util: Utils, onRequestPermission: () -> Unit) {
                 .padding(top = Dimens.MarginLarge),
             verticalArrangement = Arrangement.spacedBy(Dimens.MarginXLarge)
         ) {
-            Text(
-                text = stringResource(id = R.string.text_information),
-                style = MaterialTheme.typography.bodyLarge
-            )
+            // 親しみやすい導入メッセージ
+            StatusMessageCard(internalUsage)
 
             // 内部ストレージカード
             PathCard(
@@ -254,11 +260,55 @@ fun StoragePathScreen(util: Utils, onRequestPermission: () -> Unit) {
     }
 }
 
+@Composable
+private fun StatusMessageCard(usage: Float) {
+    val message = when {
+        usage <= 0f -> stringResource(id = R.string.storage_status_loading)
+        usage > 0.9f -> stringResource(id = R.string.storage_status_full)
+        usage > 0.7f -> stringResource(id = R.string.storage_status_low)
+        else -> stringResource(id = R.string.storage_status_enough)
+    }
+
+    val color = when {
+        usage > 0.9f -> MaterialTheme.colorScheme.error
+        usage > 0.7f -> MaterialTheme.colorScheme.tertiary
+        else -> MaterialTheme.colorScheme.primary
+    }
+
+    Surface(
+        color = color.copy(alpha = 0.1f),
+        shape = RoundedCornerShape(Dimens.RadiusMedium),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier.padding(Dimens.MarginLarge),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.Info,
+                contentDescription = null,
+                tint = color,
+                modifier = Modifier.size(Dimens.IconSmall)
+            )
+            Spacer(modifier = Modifier.width(Dimens.MarginMedium))
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                color = color
+            )
+        }
+    }
+}
+
 private fun copyToClipboard(context: Context, label: String, text: String) {
     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     val clip = ClipData.newPlainText(label, text)
     clipboard.setPrimaryClip(clip)
-    Toast.makeText(context, "$label をコピーしました。\n$text", Toast.LENGTH_LONG).show()
+    Toast.makeText(
+        context,
+        context.getString(R.string.msg_copied, label, text),
+        Toast.LENGTH_LONG
+    ).show()
 }
 
 @Preview(showBackground = true)
@@ -282,10 +332,13 @@ fun PathCardComparisonPreview() {
 
     StoragePathGetterTheme {
         Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+            modifier = Modifier.padding(Dimens.MarginLarge),
+            verticalArrangement = Arrangement.spacedBy(Dimens.MarginXLarge)
         ) {
-            Text("▼ 修正前 (Legacy)", style = MaterialTheme.typography.labelLarge)
+            Text(
+                stringResource(id = R.string.label_legacy_preview),
+                style = MaterialTheme.typography.labelLarge
+            )
             LegacyPathCard(
                 title = "内部ストレージ",
                 path = samplePath,
@@ -296,9 +349,12 @@ fun PathCardComparisonPreview() {
                 onOpen = {}
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(Dimens.MarginLarge))
 
-            Text("▼ 修正後 (New Modern)", style = MaterialTheme.typography.labelLarge)
+            Text(
+                stringResource(id = R.string.label_new_preview),
+                style = MaterialTheme.typography.labelLarge
+            )
             PathCard(
                 title = "内部ストレージ",
                 path = samplePath,

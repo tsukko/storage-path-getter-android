@@ -88,6 +88,7 @@ android {
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.documentfile)
+    implementation(libs.androidx.fragment.ktx)
     implementation(libs.play.services.ads)
     implementation(libs.androidx.core.splashscreen)
 

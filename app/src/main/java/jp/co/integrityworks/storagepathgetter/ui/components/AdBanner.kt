@@ -39,12 +39,13 @@ fun AdBanner(modifier: Modifier = Modifier) {
     val adUnitId = stringResource(id = R.string.ad_unit_id)
     AndroidView(
         modifier = modifier,
-        factory = {
-            AdView(it).apply {
+        factory = { viewContext ->
+            AdView(viewContext).apply {
                 // アダプティブバナーのサイズを正確に計算
-                val displayMetrics = context.resources.displayMetrics
+                val displayMetrics = viewContext.resources.displayMetrics
                 val widthInDp = (displayMetrics.widthPixels / displayMetrics.density).toInt()
-                val adSize = AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(it, widthInDp)
+                @Suppress("DEPRECATION")
+                val adSize = AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(viewContext, widthInDp)
 
                 setAdSize(adSize)
                 this.adUnitId = adUnitId

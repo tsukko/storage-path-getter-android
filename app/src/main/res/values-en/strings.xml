@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">Storage Path Getter</string>
-    <string name="text_information">Displays storage paths of your device.</string>
     <string name="text_inner_path">Internal Storage</string>
     <string name="text_none">None</string>
     <string name="text_external_path">External Storage</string>
@@ -26,4 +25,20 @@
     <string name="label_other_files">%1$d other files...</string>
     <string name="label_no_path">No path info</string>
     <string name="msg_no_app_to_open_folder">No app found to open the folder</string>
+
+    <!-- Storage Status Messages -->
+    <string name="storage_status_loading">Loading storage information...</string>
+    <string name="storage_status_full">Storage is almost full! Consider cleaning up some files.</string>
+    <string name="storage_status_low">Storage space is running low.</string>
+    <string name="storage_status_enough">You have plenty of storage space. Great!</string>
+
+    <string name="msg_copied">Copied %1$s.\n%2$s</string>
+    <string name="permission_denied">Permission denied</string>
+    <string name="dialog_permission_title">Permission Required</string>
+    <string name="dialog_permission_message">Please allow \"Usage Access\" in the settings to retrieve app usage statistics.</string>
+    <string name="dialog_permission_positive">Open Settings</string>
+    <string name="dialog_permission_negative">Cancel</string>
+    <string name="label_path_prefix">Path:</string>
+    <string name="label_legacy_preview">▼ Legacy</string>
+    <string name="label_new_preview">▼ New Modern</string>
 </resources>

@@ -12,6 +12,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.google.android.gms.ads.MobileAds
+import jp.co.integrityworks.storagepathgetter.R
 import jp.co.integrityworks.storagepathgetter.ui.screens.StoragePathScreen
 import jp.co.integrityworks.storagepathgetter.ui.theme.StoragePathGetterTheme
 import jp.co.integrityworks.storagepathgetter.util.Logger
@@ -31,7 +32,8 @@ class MainActivity : ComponentActivity() {
                 // 権限が取得できたらUIの状態を更新するためのトリガーを引く
                 // (Composeではstate変数を更新することで自動的に再描画されます)
             } else {
-                Toast.makeText(this, "権限が許可されませんでした", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.permission_denied), Toast.LENGTH_SHORT)
+                    .show()
             }
         }
 
@@ -55,15 +57,15 @@ class MainActivity : ComponentActivity() {
 
     private fun showPermissionDialog() {
         AlertDialog.Builder(this)
-            .setTitle("権限が必要です")
-            .setMessage("アプリの使用状況を取得するために、設定画面で「使用状況へのアクセス」を許可してください。")
-            .setPositiveButton("設定を開く") { _, _ ->
+            .setTitle(getString(R.string.dialog_permission_title))
+            .setMessage(getString(R.string.dialog_permission_message))
+            .setPositiveButton(getString(R.string.dialog_permission_positive)) { _, _ ->
                 val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS).apply {
                     data = Uri.fromParts("package", packageName, null)
                 }
                 startForResult.launch(intent)
             }
-            .setNegativeButton("キャンセル", null)
+            .setNegativeButton(getString(R.string.dialog_permission_negative), null)
             .show()
     }
 }
