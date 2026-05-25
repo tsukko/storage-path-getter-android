@@ -24,8 +24,10 @@ object Dimens {
     val IconNormal = 24.dp
     val IconLarge = 48.dp
     val ProgressBarHeight = 8.dp
+    val ElevationSmall = 2.dp
 
     val TextSizeLabelSmall = 8.sp
+    val TextSizeXXSmall = 11.sp
     val TextSizeSmall = 12.sp
     val TextSizeNormal = 14.sp
     val TextSizeLarge = 18.sp

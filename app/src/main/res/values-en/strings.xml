@@ -1,7 +1,6 @@
 <resources>
-    <string name="app_name">Storage Path Getter</string>
+    <string name="app_name">Storage Spot</string>
     <string name="text_inner_path">Internal Storage</string>
-    <string name="text_none">None</string>
     <string name="text_external_path">External Storage</string>
     <string name="text_reacquire">Refresh</string>
     <string name="text_clear">Clear</string>
@@ -25,6 +24,7 @@
     <string name="label_other_files">%1$d other files...</string>
     <string name="label_no_path">No path info</string>
     <string name="msg_no_app_to_open_folder">No app found to open the folder</string>
+    <string name="label_path_prefix">Path:</string>
 
     <!-- Storage Status Messages -->
     <string name="storage_status_loading">Loading storage information...</string>
@@ -38,7 +38,7 @@
     <string name="dialog_permission_message">Please allow \"Usage Access\" in the settings to retrieve app usage statistics.</string>
     <string name="dialog_permission_positive">Open Settings</string>
     <string name="dialog_permission_negative">Cancel</string>
-    <string name="label_path_prefix">Path:</string>
+
     <string name="label_legacy_preview">▼ Legacy</string>
     <string name="label_new_preview">▼ New Modern</string>
 </resources>

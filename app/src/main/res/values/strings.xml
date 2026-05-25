@@ -1,12 +1,11 @@
 <resources>
-    <string name="app_name">ストレージパス取得</string>
+    <string name="app_name">ストレージ案内</string>
     <string name="text_inner_path">内部ストレージ</string>
-    <string name="text_none">なし</string>
     <string name="text_external_path">外部ストレージ</string>
     <string name="text_reacquire">再取得</string>
     <string name="text_clear">クリア</string>
 
-    <!-- 追加: ストレージ内訳関連 -->
+    <!-- ストレージ内訳関連 -->
     <string name="label_usage">使用量</string>
     <string name="label_usage_info_none">情報なし</string>
     <string name="label_usage_percent">%1$d%% 使用中</string>
@@ -18,26 +17,28 @@
     <string name="category_apps">アプリ</string>
     <string name="category_other">その他</string>
 
-    <!-- 追加: 最近のファイル関連 -->
+    <!-- 最近のファイル関連 -->
     <string name="title_recent_files">最近のファイル (24時間以内)</string>
     <string name="msg_select_folder">対象のフォルダを選択してください</string>
     <string name="action_select_folder">フォルダを選択</string>
     <string name="label_other_files">他 %1$d 件のファイル...</string>
     <string name="label_no_path">パス情報なし</string>
     <string name="msg_no_app_to_open_folder">フォルダを開けるアプリが見つかりませんでした</string>
-    <string name="msg_copied">%1$s をコピーしました。\n%2$s</string>
+    <string name="label_path_prefix">保存場所のパス:</string>
 
     <!-- ストレージステータスメッセージ -->
     <string name="storage_status_loading">ストレージ情報を読み込んでいます...</string>
     <string name="storage_status_full">ストレージがほぼ満杯です！不要なファイルを整理しましょう。</string>
     <string name="storage_status_low">少し容量が減ってきました。整理を検討しても良いかもしれません。</string>
     <string name="storage_status_enough">ストレージには十分な余裕があります。快適ですね！</string>
+
+    <string name="msg_copied">%1$s をコピーしました。\n%2$s</string>
     <string name="permission_denied">権限が許可されませんでした</string>
     <string name="dialog_permission_title">権限が必要です</string>
     <string name="dialog_permission_message">アプリの使用状況を取得するために、設定画面で「使用状況へのアクセス」を許可してください。</string>
     <string name="dialog_permission_positive">設定を開く</string>
     <string name="dialog_permission_negative">キャンセル</string>
-    <string name="label_path_prefix">保存場所のパス:</string>
+
     <string name="label_legacy_preview">▼ 修正前 (Legacy)</string>
     <string name="label_new_preview">▼ 修正後 (New Modern)</string>
 </resources>

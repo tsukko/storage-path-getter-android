@@ -19,7 +19,6 @@ class Utils(private val context: Context) {
 
     /**
      * ストレージのパスを取得する
-     *
      */
     fun getPath(isExternal: Boolean): String {
         val dirArr = context.getExternalFilesDirs(null)
@@ -82,14 +81,12 @@ class Utils(private val context: Context) {
             val uuid: UUID = if (path.contains("emulated/0")) {
                 StorageManager.UUID_DEFAULT
             } else {
-                // 外部SDカードなどのUUIDを取得
                 val volumes = storageManager.storageVolumes
                 var foundUuid = StorageManager.UUID_DEFAULT
                 for (volume in volumes) {
                     val volumePath = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                         volume.directory?.absolutePath
                     } else {
-                        // API 29用のフォールバック（リフレクションまたは簡易判定）
                         null
                     }
                     if (volumePath != null && path.startsWith(volumePath)) {
@@ -111,8 +108,6 @@ class Utils(private val context: Context) {
             val available = getAvailableSize(path)
             val usedTotal = total - available
 
-            // statsから取得できる各項目のサイズ
-            // appsは別途取得した方が正確な場合があるが、ここでは簡易的に計算
             StorageBreakdown(
                 imageBytes = stats.imageBytes,
                 videoBytes = stats.videoBytes,
@@ -139,7 +134,6 @@ class Utils(private val context: Context) {
         val now = System.currentTimeMillis()
         val twentyFourHoursAgo = now - (24 * 60 * 60 * 1000L)
 
-        // 再帰的に探索せず、直下のファイルのみを対象とする
         root.listFiles().forEach { file ->
             if (file.isFile && file.lastModified() >= twentyFourHoursAgo) {
                 recentFiles.add(
@@ -185,5 +179,21 @@ class Utils(private val context: Context) {
             context.packageName
         )
         return mode == AppOpsManager.MODE_ALLOWED
+    }
+
+    /**
+     * バイト数を適切な単位（GB, MB, KB）にフォーマットする
+     */
+    fun formatBytes(bytes: Long): String {
+        if (bytes <= 0) return "0 B"
+        val dfGb = DecimalFormat("#,###.## GB")
+        val dfMb = DecimalFormat("#,###.## MB")
+        val dfKb = DecimalFormat("#,###.## KB")
+
+        return when {
+            bytes >= 1024.0.pow(3.0) -> dfGb.format(bytes / 1024.0.pow(3.0))
+            bytes >= 1024.0.pow(2.0) -> dfMb.format(bytes / 1024.0.pow(2.0))
+            else -> dfKb.format(bytes / 1024.0)
+        }
     }
 }

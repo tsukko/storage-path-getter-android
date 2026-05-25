@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "StoragePathGetter"
+rootProject.name = "StorageSpot"
 include(":app")
  

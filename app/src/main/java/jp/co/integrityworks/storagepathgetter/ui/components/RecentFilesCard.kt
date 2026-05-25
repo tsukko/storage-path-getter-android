@@ -27,17 +27,17 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import jp.co.integrityworks.storagepathgetter.R
 import jp.co.integrityworks.storagepathgetter.data.entities.RecentFile
 import jp.co.integrityworks.storagepathgetter.ui.theme.Dimens
-import java.text.DecimalFormat
+import jp.co.integrityworks.storagepathgetter.util.Utils
 import java.text.SimpleDateFormat
 import java.util.Date
-import kotlin.math.pow
+import kotlin.math.roundToInt
 
 @Composable
 fun RecentFilesCard(
+    util: Utils,
     files: List<RecentFile>,
     onSelectFolder: () -> Unit,
     modifier: Modifier = Modifier
@@ -48,7 +48,7 @@ fun RecentFilesCard(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = Dimens.ElevationSmall)
     ) {
         Column(modifier = Modifier.padding(Dimens.MarginXLarge)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -84,7 +84,7 @@ fun RecentFilesCard(
                 }
             } else {
                 files.take(5).forEach { file ->
-                    RecentFileItem(file)
+                    RecentFileItem(util, file)
                     Spacer(modifier = Modifier.height(Dimens.MarginMiddle))
                 }
 
@@ -102,7 +102,7 @@ fun RecentFilesCard(
 }
 
 @Composable
-private fun RecentFileItem(file: RecentFile) {
+private fun RecentFileItem(util: Utils, file: RecentFile) {
     val configuration = LocalConfiguration.current
     val locale = configuration.locales[0]
     Row(
@@ -129,33 +129,17 @@ private fun RecentFileItem(file: RecentFile) {
             )
             Row {
                 Text(
-                    text = formatBytes(file.size),
+                    text = util.formatBytes(file.size),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.width(Dimens.MarginMiddle))
                 Text(
-                    text = SimpleDateFormat(
-                        "HH:mm",
-                        locale
-                    ).format(Date(file.lastModified)),
+                    text = SimpleDateFormat("HH:mm", locale).format(Date(file.lastModified)),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
-    }
-}
-
-private fun formatBytes(bytes: Long): String {
-    if (bytes <= 0) return "0 B"
-    val dfGb = DecimalFormat("#,###.## GB")
-    val dfMb = DecimalFormat("#,###.## MB")
-    val dfKb = DecimalFormat("#,###.## KB")
-
-    return when {
-        bytes >= 1024.0.pow(3.0) -> dfGb.format(bytes / 1024.0.pow(3.0))
-        bytes >= 1024.0.pow(2.0) -> dfMb.format(bytes / 1024.0.pow(2.0))
-        else -> dfKb.format(bytes / 1024.0)
     }
 }

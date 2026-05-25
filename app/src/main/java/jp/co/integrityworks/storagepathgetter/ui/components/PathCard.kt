@@ -51,12 +51,12 @@ import androidx.compose.ui.unit.sp
 import jp.co.integrityworks.storagepathgetter.R
 import jp.co.integrityworks.storagepathgetter.data.entities.StorageBreakdown
 import jp.co.integrityworks.storagepathgetter.ui.theme.Dimens
-import java.text.DecimalFormat
-import kotlin.math.pow
+import jp.co.integrityworks.storagepathgetter.util.Utils
 import kotlin.math.roundToInt
 
 @Composable
 fun PathCard(
+    util: Utils,
     title: String,
     path: String,
     icon: ImageVector,
@@ -71,7 +71,6 @@ fun PathCard(
     val isCritical = usage > 0.9f
     val isWarning = usage > 0.7f
 
-    // 状況に応じたメッセージとアイコン
     val statusEmoji = when {
         usage <= 0f -> ""
         isCritical -> "😱"
@@ -85,10 +84,9 @@ fun PathCard(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = Dimens.ElevationSmall)
     ) {
         Column(modifier = Modifier.padding(Dimens.MarginXLarge)) {
-            // ヘッダー部分
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
@@ -153,7 +151,7 @@ fun PathCard(
                         IconButton(onClick = { onCopy(path) }) {
                             Icon(
                                 imageVector = Icons.Default.ContentCopy,
-                                contentDescription = stringResource(id = R.string.text_clear),
+                                contentDescription = null,
                                 modifier = Modifier.size(Dimens.IconSmall),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                             )
@@ -170,9 +168,8 @@ fun PathCard(
                 }
             }
 
-            Spacer(modifier = Modifier.height(Dimens.RadiusLarge))
+            Spacer(modifier = Modifier.height(Dimens.MarginLarge))
 
-            // グラフ部分
             if (usage > 0) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -188,7 +185,7 @@ fun PathCard(
                         text = usageText,
                         style = MaterialTheme.typography.labelMedium.copy(
                             fontWeight = FontWeight.SemiBold,
-                            fontFeatureSettings = "tnum" // 数字を等幅にして読みやすく
+                            fontFeatureSettings = "tnum"
                         ),
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -200,7 +197,7 @@ fun PathCard(
                     progress = { usage },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(Dimens.ProgressBarHeight + 2.dp) // ほんの少しだけ太くして見やすく
+                        .height(Dimens.ProgressBarHeight + 2.dp)
                         .clip(CircleShape),
                     color = when {
                         isCritical -> MaterialTheme.colorScheme.error
@@ -214,7 +211,6 @@ fun PathCard(
 
             Spacer(modifier = Modifier.height(Dimens.MarginXLarge))
 
-            // パス部分（「保存場所」というラベルを付けて分かりやすく）
             Column {
                 Text(
                     text = stringResource(id = R.string.label_path_prefix),
@@ -236,8 +232,8 @@ fun PathCard(
                     Text(
                         text = path.ifEmpty { stringResource(id = R.string.label_no_path) },
                         style = MaterialTheme.typography.bodySmall.copy(
-                            fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace, // ここだけ少しエンジニアのこだわり（等幅）
-                            fontSize = 11.sp
+                            fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                            fontSize = Dimens.TextSizeXXSmall
                         ),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
@@ -246,7 +242,6 @@ fun PathCard(
                 }
             }
 
-            // 内訳表示（アコーディオン）
             if (usage > 0) {
                 Spacer(modifier = Modifier.height(Dimens.MarginLarge))
 
@@ -290,26 +285,31 @@ fun PathCard(
                             .padding(Dimens.MarginLarge)
                     ) {
                         BreakdownRow(
+                            util,
                             stringResource(id = R.string.category_image),
                             breakdown.imageBytes,
                             MaterialTheme.colorScheme.primary
                         )
                         BreakdownRow(
+                            util,
                             stringResource(id = R.string.category_video),
                             breakdown.videoBytes,
                             MaterialTheme.colorScheme.secondary
                         )
                         BreakdownRow(
+                            util,
                             stringResource(id = R.string.category_audio),
                             breakdown.audioBytes,
                             MaterialTheme.colorScheme.tertiary
                         )
                         BreakdownRow(
+                            util,
                             stringResource(id = R.string.category_apps),
                             breakdown.appBytes,
                             MaterialTheme.colorScheme.error
                         )
                         BreakdownRow(
+                            util,
                             stringResource(id = R.string.category_other),
                             breakdown.otherBytes,
                             MaterialTheme.colorScheme.outline
@@ -322,16 +322,16 @@ fun PathCard(
 }
 
 @Composable
-private fun BreakdownRow(label: String, bytes: Long, color: Color) {
+private fun BreakdownRow(util: Utils, label: String, bytes: Long, color: Color) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = Dimens.MarginSmall + 2.dp),
+            .padding(vertical = Dimens.MarginMiddle),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier
-                .size(10.dp)
+                .size(Dimens.MarginMiddle + Dimens.MarginSmall / 2)
                 .clip(CircleShape)
                 .background(color)
         )
@@ -343,25 +343,12 @@ private fun BreakdownRow(label: String, bytes: Long, color: Color) {
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Text(
-            text = formatBytes(bytes),
+            text = util.formatBytes(bytes),
             style = MaterialTheme.typography.bodySmall.copy(
                 fontWeight = FontWeight.Bold,
                 fontFeatureSettings = "tnum"
             ),
             color = MaterialTheme.colorScheme.onSurface
         )
-    }
-}
-
-private fun formatBytes(bytes: Long): String {
-    if (bytes <= 0) return "0 B"
-    val dfGb = DecimalFormat("#,###.## GB")
-    val dfMb = DecimalFormat("#,###.## MB")
-    val dfKb = DecimalFormat("#,###.## KB")
-
-    return when {
-        bytes >= 1024.0.pow(3.0) -> dfGb.format(bytes / 1024.0.pow(3.0))
-        bytes >= 1024.0.pow(2.0) -> dfMb.format(bytes / 1024.0.pow(2.0))
-        else -> dfKb.format(bytes / 1024.0)
     }
 }

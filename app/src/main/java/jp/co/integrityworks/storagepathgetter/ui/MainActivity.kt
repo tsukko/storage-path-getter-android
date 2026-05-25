@@ -30,7 +30,6 @@ class MainActivity : ComponentActivity() {
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             if (util.hasUsageStatsPermission()) {
                 // 権限が取得できたらUIの状態を更新するためのトリガーを引く
-                // (Composeではstate変数を更新することで自動的に再描画されます)
             } else {
                 Toast.makeText(this, getString(R.string.permission_denied), Toast.LENGTH_SHORT)
                     .show()
