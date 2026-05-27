@@ -15,21 +15,20 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = DeepBlue80,
+    secondary = TechBlue80,
+    tertiary = Emerald80
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
+    primary = DeepBlue40,
+    secondary = TechBlue40,
+    tertiary = Emerald40
 )
 
 @Composable
 fun StoragePathGetterTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
@@ -52,7 +51,7 @@ fun StoragePathGetterTheme(
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = MaterialTheme.typography, // 必要に応じて Typography.kt も作成できます
+        typography = MaterialTheme.typography,
         content = content
     )
 }

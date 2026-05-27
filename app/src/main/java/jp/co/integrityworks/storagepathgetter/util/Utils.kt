@@ -2,12 +2,14 @@ package jp.co.integrityworks.storagepathgetter.util
 
 import android.app.AppOpsManager
 import android.app.usage.StorageStatsManager
+import android.content.ContentUris
 import android.content.Context
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.os.StatFs
 import android.os.storage.StorageManager
+import android.provider.MediaStore
 import androidx.documentfile.provider.DocumentFile
 import jp.co.integrityworks.storagepathgetter.data.entities.RecentFile
 import jp.co.integrityworks.storagepathgetter.data.entities.StorageBreakdown
@@ -122,6 +124,66 @@ class Utils(private val context: Context) {
             Logger.error("Utils", "Error getting storage breakdown", e)
             StorageBreakdown()
         }
+    }
+
+    /**
+     * 端末全体から直近24時間以内に保存・更新されたファイル（画像、動画、ダウンロード等）を自動取得する
+     */
+    fun getRecentFilesAutomatic(): List<RecentFile> {
+        val recentFiles = mutableListOf<RecentFile>()
+        val now = System.currentTimeMillis()
+        val twentyFourHoursAgo = now / 1000L - (24 * 60 * 60) // MediaStoreは秒単位
+
+        // 検索対象のコレクション（画像、動画、ダウンロード）
+        val collections = mutableListOf(
+            MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+            MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+            MediaStore.Downloads.EXTERNAL_CONTENT_URI
+        )
+
+        val projection = arrayOf(
+            MediaStore.MediaColumns._ID,
+            MediaStore.MediaColumns.DISPLAY_NAME,
+            MediaStore.MediaColumns.SIZE,
+            MediaStore.MediaColumns.DATE_MODIFIED
+        )
+
+        val selection = "${MediaStore.MediaColumns.DATE_MODIFIED} >= ?"
+        val selectionArgs = arrayOf(twentyFourHoursAgo.toString())
+        val sortOrder = "${MediaStore.MediaColumns.DATE_MODIFIED} DESC"
+
+        collections.forEach { collection ->
+            try {
+                context.contentResolver.query(
+                    collection,
+                    projection,
+                    selection,
+                    selectionArgs,
+                    sortOrder
+                )?.use { cursor ->
+                    val idColumn = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns._ID)
+                    val nameColumn =
+                        cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DISPLAY_NAME)
+                    val sizeColumn = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.SIZE)
+                    val dateColumn =
+                        cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_MODIFIED)
+
+                    while (cursor.moveToNext()) {
+                        val id = cursor.getLong(idColumn)
+                        val name = cursor.getString(nameColumn)
+                        val size = cursor.getLong(sizeColumn)
+                        val dateModified = cursor.getLong(dateColumn) * 1000L // ミリ秒に変換
+                        val contentUri = ContentUris.withAppendedId(collection, id)
+
+                        recentFiles.add(RecentFile(name, size, dateModified, contentUri))
+                    }
+                }
+            } catch (e: Exception) {
+                Logger.error("Utils", "Error querying MediaStore", e)
+            }
+        }
+
+        return recentFiles.sortedByDescending { it.lastModified }.take(20)
     }
 
     /**

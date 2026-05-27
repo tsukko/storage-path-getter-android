@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Map Pin (Spot) -->
+    <path
+        android:fillColor="#ffffff"
+        android:pathData="M54,20c-13.25,0-24,10.75-24,24c0,18,24,44,24,44s24,-26,24,-44C78,30.75,67.25,20,54,20z" />
+
+    <!-- SD Card Silhouette inside the pin -->
+    <path
+        android:fillColor="#005AC1"
+        android:pathData="M48,34h11c0.55,0,1,0.45,1,1v16c0,0.55-0.45,1-1,1h-12c-0.55,0-1-0.45-1-1v-15l2,-2z" />
+
+    <!-- SD Card detail pins -->
+    <path
+        android:fillColor="#ffffff"
+        android:fillAlpha="0.8"
+        android:pathData="M49,36h1v3h-1z M51,36h1v3h-1z M53,36h1v3h-1z M55,36h1v3h-1z" />
+</vector>

@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">ストレージ案内</string>
-    <string name="text_inner_path">内部ストレージ</string>
-    <string name="text_external_path">外部ストレージ</string>
+    <string name="text_inner_path">内部ストレージの場所</string>
+    <string name="text_external_path">SDカードの場所</string>
     <string name="text_reacquire">再取得</string>
     <string name="text_clear">クリア</string>
 
@@ -19,12 +19,13 @@
 
     <!-- 最近のファイル関連 -->
     <string name="title_recent_files">最近のファイル (24時間以内)</string>
-    <string name="msg_select_folder">対象のフォルダを選択してください</string>
-    <string name="action_select_folder">フォルダを選択</string>
     <string name="label_other_files">他 %1$d 件のファイル...</string>
-    <string name="label_no_path">パス情報なし</string>
+    <string name="label_no_path">保存先が見つかりません</string>
     <string name="msg_no_app_to_open_folder">フォルダを開けるアプリが見つかりませんでした</string>
-    <string name="label_path_prefix">保存場所のパス:</string>
+    <string name="label_path_prefix">詳細な場所 (パス):</string>
+    <string name="msg_sd_card_not_found">SDカードが挿入されていないか、認識されていません。</string>
+    <string name="action_copy_path">タップしてパスをコピー</string>
+    <string name="action_view_folder">フォルダの中を見る</string>
 
     <!-- ストレージステータスメッセージ -->
     <string name="storage_status_loading">ストレージ情報を読み込んでいます...</string>
@@ -39,6 +40,10 @@
     <string name="dialog_permission_positive">設定を開く</string>
     <string name="dialog_permission_negative">キャンセル</string>
 
-    <string name="label_legacy_preview">▼ 修正前 (Legacy)</string>
-    <string name="label_new_preview">▼ 修正後 (New Modern)</string>
+    <string name="folder_download">ダウンロード</string>
+    <string name="folder_camera">カメラ</string>
+    <string name="msg_recent_files_empty">24時間以内に保存されたファイルは、まだ見つかりません。</string>
+    <string name="action_auto_scan">端末全体を自動スキャンする</string>
+    <string name="label_manual_scan_hint">または、特定のフォルダを選んで探す:</string>
+    <string name="label_auto_scan_active">※端末全体の画像・動画・ダウンロードを自動で探しています</string>
 </resources>

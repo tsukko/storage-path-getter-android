@@ -7,7 +7,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -27,9 +26,9 @@ import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -45,6 +44,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -87,6 +87,7 @@ fun PathCard(
         elevation = CardDefaults.cardElevation(defaultElevation = Dimens.ElevationSmall)
     ) {
         Column(modifier = Modifier.padding(Dimens.MarginXLarge)) {
+            // ヘッダー部分
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
@@ -126,43 +127,28 @@ fun PathCard(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = if (usage > 0) stringResource(
-                                id = R.string.label_usage_percent,
-                                usagePercent
-                            ) else stringResource(id = R.string.label_usage_info_none),
-                            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
-                            color = when {
-                                isCritical -> MaterialTheme.colorScheme.error
-                                isWarning -> MaterialTheme.colorScheme.tertiary
-                                else -> MaterialTheme.colorScheme.primary
-                            }
-                        )
-                        if (statusEmoji.isNotEmpty()) {
-                            Spacer(modifier = Modifier.width(Dimens.MarginSmall))
-                            Text(text = statusEmoji, fontSize = Dimens.TextSizeNormal)
+                    Text(
+                        text = if (usage > 0) stringResource(
+                            id = R.string.label_usage_percent,
+                            usagePercent
+                        ) else stringResource(id = R.string.label_usage_info_none),
+                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
+                        color = when {
+                            isCritical -> MaterialTheme.colorScheme.error
+                            isWarning -> MaterialTheme.colorScheme.tertiary
+                            else -> MaterialTheme.colorScheme.primary
                         }
-                    }
+                    )
                 }
 
-                if (path.isNotEmpty()) {
-                    Row {
-                        IconButton(onClick = { onCopy(path) }) {
-                            Icon(
-                                imageVector = Icons.Default.ContentCopy,
-                                contentDescription = null,
-                                modifier = Modifier.size(Dimens.IconSmall),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                            )
-                        }
-                        IconButton(onClick = { onOpen(path) }) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.OpenInNew,
-                                contentDescription = null,
-                                modifier = Modifier.size(Dimens.IconSmall),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                            )
+                if (statusEmoji.isNotEmpty()) {
+                    Surface(
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Text(text = statusEmoji, fontSize = 20.sp)
                         }
                     }
                 }
@@ -170,6 +156,7 @@ fun PathCard(
 
             Spacer(modifier = Modifier.height(Dimens.MarginLarge))
 
+            // グラフ部分
             if (usage > 0) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -197,7 +184,7 @@ fun PathCard(
                     progress = { usage },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(Dimens.ProgressBarHeight + 2.dp)
+                        .height(Dimens.ProgressBarHeight)
                         .clip(CircleShape),
                     color = when {
                         isCritical -> MaterialTheme.colorScheme.error
@@ -211,6 +198,7 @@ fun PathCard(
 
             Spacer(modifier = Modifier.height(Dimens.MarginXLarge))
 
+            // パス部分の改善（安心感優先：ボタン化）
             Column {
                 Text(
                     text = stringResource(id = R.string.label_path_prefix),
@@ -221,52 +209,114 @@ fun PathCard(
                         bottom = Dimens.MarginSmall
                     )
                 )
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(Dimens.RadiusMedium))
-                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
-                        .then(if (path.isNotEmpty()) Modifier.clickable { onCopy(path) } else Modifier)
-                        .padding(horizontal = Dimens.MarginLarge, vertical = Dimens.MarginMedium)
+
+                if (path.isEmpty()) {
+                    // パスがない（SDカード未挿入など）時の親切な表示
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(Dimens.RadiusMedium))
+                            .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.03f))
+                            .padding(Dimens.MarginLarge),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = if (title.contains("SD") || title.contains("SDカード"))
+                                stringResource(id = R.string.msg_sd_card_not_found)
+                            else stringResource(id = R.string.label_no_path),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                } else {
+                    Surface(
+                        onClick = { onCopy(path) },
+                        shape = RoundedCornerShape(Dimens.RadiusMedium),
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.05f),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(Dimens.MarginLarge),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = path,
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                                    fontSize = Dimens.TextSizeXXSmall
+                                ),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                textAlign = TextAlign.Center
+                            )
+
+                            Spacer(modifier = Modifier.height(Dimens.MarginSmall))
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Default.ContentCopy,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(14.dp),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = stringResource(id = R.string.action_copy_path),
+                                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            // アクションの階層化：フォルダを開くボタンを OutlinedButton へ
+            if (path.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(Dimens.MarginMiddle))
+                OutlinedButton(
+                    onClick = { onOpen(path) },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(Dimens.RadiusMedium)
                 ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.OpenInNew,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = path.ifEmpty { stringResource(id = R.string.label_no_path) },
-                        style = MaterialTheme.typography.bodySmall.copy(
-                            fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
-                            fontSize = Dimens.TextSizeXXSmall
-                        ),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        text = stringResource(id = R.string.action_view_folder),
+                        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
                     )
                 }
             }
 
+            // 内訳表示（さらに控えめに）
             if (usage > 0) {
                 Spacer(modifier = Modifier.height(Dimens.MarginLarge))
 
-                Surface(
-                    onClick = { expanded = !expanded },
-                    shape = RoundedCornerShape(Dimens.RadiusSmall),
-                    color = Color.Transparent,
-                    modifier = Modifier.fillMaxWidth()
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(Dimens.RadiusSmall))
+                        .clickable { expanded = !expanded }
+                        .padding(vertical = Dimens.MarginMiddle),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Row(
-                        modifier = Modifier.padding(vertical = Dimens.MarginMiddle),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
                             text = if (expanded) stringResource(id = R.string.action_hide_breakdown) else stringResource(
                                 id = R.string.action_show_breakdown
                             ),
                             style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
-                            color = MaterialTheme.colorScheme.primary
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
                         )
                         Icon(
                             imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
+                            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
                             modifier = Modifier.size(Dimens.IconNormal)
                         )
                     }

@@ -5,7 +5,7 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.widget.Toast
+import android.provider.DocumentsContract
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -36,6 +36,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -44,6 +46,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -62,35 +65,89 @@ import jp.co.integrityworks.storagepathgetter.ui.components.RecentFilesCard
 import jp.co.integrityworks.storagepathgetter.ui.theme.Dimens
 import jp.co.integrityworks.storagepathgetter.ui.theme.StoragePathGetterTheme
 import jp.co.integrityworks.storagepathgetter.util.Utils
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StoragePathScreen(util: Utils, onRequestPermission: () -> Unit) {
     val context = LocalContext.current
     val isInspection = LocalInspectionMode.current
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     // ストレージ情報を一括管理
-    var internalVolume by remember { 
-        mutableStateOf(StorageVolume(path = if (isInspection) "/storage/emulated/0" else "")) 
+    var internalVolume by remember {
+        mutableStateOf(StorageVolume(path = if (isInspection) "/storage/emulated/0" else ""))
     }
-    var externalVolume by remember { 
-        mutableStateOf(StorageVolume(path = if (isInspection) "/storage/1234-5678" else "")) 
+    var externalVolume by remember {
+        mutableStateOf(StorageVolume(path = if (isInspection) "/storage/1234-5678" else ""))
     }
 
     var recentFiles by remember { mutableStateOf<List<RecentFile>>(emptyList()) }
     var selectedFolderUri by remember { mutableStateOf<Uri?>(null) }
 
-    val folderPickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.OpenDocumentTree()
-    ) { uri ->
-        if (uri != null) {
-            context.contentResolver.takePersistableUriPermission(
-                uri,
-                Intent.FLAG_GRANT_READ_URI_PERMISSION
-            )
-            selectedFolderUri = uri
-            recentFiles = util.getRecentFiles(uri)
+    // 権限があるかどうかを保持
+    var isAutoScanEnabled by remember {
+        mutableStateOf(
+            if (isInspection) true else {
+                val permission =
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                        context.checkSelfPermission(android.Manifest.permission.READ_MEDIA_IMAGES) == android.content.pm.PackageManager.PERMISSION_GRANTED
+                    } else {
+                        context.checkSelfPermission(android.Manifest.permission.READ_EXTERNAL_STORAGE) == android.content.pm.PackageManager.PERMISSION_GRANTED
+                    }
+                permission
+            }
+        )
+    }
+
+    // メディア権限のリクエスト用
+    val mediaPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val granted = permissions.entries.all { it.value }
+        if (granted) {
+            isAutoScanEnabled = true
+            recentFiles = util.getRecentFilesAutomatic()
         }
+    }
+
+    // 特定のフォルダを初期位置として開くためのランチャー
+    val customFolderPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == android.app.Activity.RESULT_OK) {
+            result.data?.data?.let { uri ->
+                context.contentResolver.takePersistableUriPermission(
+                    uri,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
+                selectedFolderUri = uri
+                recentFiles = util.getRecentFiles(uri)
+            }
+        }
+    }
+
+    val launchFolderPicker = { folderName: String? ->
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+        try {
+            if (folderName != null) {
+                // 内部ストレージの特定フォルダ（DownloadやDCIM）を指すURIを構築
+                val initialUri = DocumentsContract.buildDocumentUri(
+                    "com.android.externalstorage.documents",
+                    "primary:$folderName"
+                )
+                intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, initialUri)
+            }
+        } catch (e: Exception) {
+            // URIの構築に失敗した場合は、初期位置指定なしで開く
+            jp.co.integrityworks.storagepathgetter.util.Logger.error(
+                "StoragePathScreen",
+                "Failed to build initial URI",
+                e
+            )
+        }
+        customFolderPickerLauncher.launch(intent)
     }
 
     val noAppFoundMsg = stringResource(id = R.string.msg_no_app_to_open_folder)
@@ -112,7 +169,9 @@ fun StoragePathScreen(util: Utils, onRequestPermission: () -> Unit) {
                 }
                 context.startActivity(intent)
             } catch (_: Exception) {
-                Toast.makeText(context, noAppFoundMsg, Toast.LENGTH_SHORT).show()
+                scope.launch {
+                    snackbarHostState.showSnackbar(noAppFoundMsg)
+                }
             }
         }
     }
@@ -122,7 +181,6 @@ fun StoragePathScreen(util: Utils, onRequestPermission: () -> Unit) {
             val iPath = util.getPath(isExternal = false)
             val ePath = util.getPath(isExternal = true)
 
-            // 内部ストレージ情報の更新
             internalVolume = StorageVolume(
                 path = iPath,
                 usageRatio = util.getStorageUsageRatio(path = iPath),
@@ -130,7 +188,6 @@ fun StoragePathScreen(util: Utils, onRequestPermission: () -> Unit) {
                 breakdown = util.getStorageBreakdown(path = iPath)
             )
 
-            // 外部ストレージ情報の更新
             externalVolume = StorageVolume(
                 path = ePath,
                 usageRatio = util.getStorageUsageRatio(path = ePath),
@@ -138,8 +195,14 @@ fun StoragePathScreen(util: Utils, onRequestPermission: () -> Unit) {
                 breakdown = util.getStorageBreakdown(path = ePath)
             )
 
+            // 自動スキャン（MediaStore）の実行
+            recentFiles = util.getRecentFilesAutomatic()
+
+            // 特定フォルダが選択されている場合はそちらを優先（または追加）
             selectedFolderUri?.let {
-                recentFiles = util.getRecentFiles(it)
+                val manualFiles = util.getRecentFiles(it)
+                recentFiles = (recentFiles + manualFiles).distinctBy { file -> file.uri }
+                    .sortedByDescending { file -> file.lastModified }
             }
         } else {
             onRequestPermission()
@@ -154,6 +217,7 @@ fun StoragePathScreen(util: Utils, onRequestPermission: () -> Unit) {
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
@@ -215,7 +279,11 @@ fun StoragePathScreen(util: Utils, onRequestPermission: () -> Unit) {
                 usage = internalVolume.usageRatio,
                 usageText = internalVolume.usageText,
                 breakdown = internalVolume.breakdown,
-                onCopy = { copyToClipboard(context, innerPathLabel, it) },
+                onCopy = {
+                    copyToClipboard(context, innerPathLabel, it) { message ->
+                        scope.launch { snackbarHostState.showSnackbar(message) }
+                    }
+                },
                 onOpen = { openFolder(it) }
             )
 
@@ -227,14 +295,31 @@ fun StoragePathScreen(util: Utils, onRequestPermission: () -> Unit) {
                 usage = externalVolume.usageRatio,
                 usageText = externalVolume.usageText,
                 breakdown = externalVolume.breakdown,
-                onCopy = { copyToClipboard(context, externalPathLabel, it) },
+                onCopy = {
+                    copyToClipboard(context, externalPathLabel, it) { message ->
+                        scope.launch { snackbarHostState.showSnackbar(message) }
+                    }
+                },
                 onOpen = { openFolder(it) }
             )
 
             RecentFilesCard(
                 util = util,
                 files = recentFiles,
-                onSelectFolder = { folderPickerLauncher.launch(null) }
+                isAutoScanEnabled = isAutoScanEnabled,
+                onSelectFolder = { launchFolderPicker(it) },
+                onRequestAutoScan = {
+                    val permissions =
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                            arrayOf(
+                                android.Manifest.permission.READ_MEDIA_IMAGES,
+                                android.Manifest.permission.READ_MEDIA_VIDEO
+                            )
+                        } else {
+                            arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE)
+                        }
+                    mediaPermissionLauncher.launch(permissions)
+                }
             )
 
             Spacer(modifier = Modifier.height(Dimens.MarginMiddle))
@@ -258,12 +343,15 @@ private fun StatusMessageCard(usage: Float) {
     }
 
     Surface(
-        color = color.copy(alpha = 0.1f),
+        color = color.copy(alpha = 0.05f), // さらに透過させてモダンに
         shape = RoundedCornerShape(Dimens.RadiusMedium),
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
-            modifier = Modifier.padding(Dimens.MarginLarge),
+            modifier = Modifier.padding(
+                horizontal = Dimens.MarginLarge,
+                vertical = Dimens.MarginXLarge
+            ), // 余白を広げてゆったりと
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
@@ -282,18 +370,20 @@ private fun StatusMessageCard(usage: Float) {
     }
 }
 
-private fun copyToClipboard(context: Context, label: String, text: String) {
+private fun copyToClipboard(
+    context: Context,
+    label: String,
+    text: String,
+    onShowSnackbar: (String) -> Unit
+) {
     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     val clip = ClipData.newPlainText(label, text)
     clipboard.setPrimaryClip(clip)
-    Toast.makeText(
-        context,
-        context.getString(R.string.msg_copied, label, text),
-        Toast.LENGTH_LONG
-    ).show()
+    onShowSnackbar(context.getString(R.string.msg_copied, label, text))
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, name = "日本語", locale = "ja")
+@Preview(showBackground = true, name = "English", locale = "en")
 @Composable
 fun StoragePathScreenPreview() {
     val context = LocalContext.current
