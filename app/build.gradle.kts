@@ -21,8 +21,8 @@ android {
         applicationId = "jp.co.integrityworks.storagepathgetter"
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
-        versionCode = 6
-        versionName = "1.3"
+        versionCode = 7
+        versionName = "2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
