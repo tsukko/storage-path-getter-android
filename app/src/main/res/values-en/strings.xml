@@ -1,0 +1,49 @@
+<resources>
+    <string name="app_name">Storage Spot</string>
+    <string name="text_inner_path">Internal Location</string>
+    <string name="text_external_path">SD Card Location</string>
+    <string name="text_reacquire">Refresh</string>
+    <string name="text_clear">Clear</string>
+
+    <!-- Storage Breakdown -->
+    <string name="label_usage">Usage</string>
+    <string name="label_usage_info_none">No info</string>
+    <string name="label_usage_percent">%1$d%% Used</string>
+    <string name="action_show_breakdown">Show details</string>
+    <string name="action_hide_breakdown">Hide details</string>
+    <string name="category_image">Images</string>
+    <string name="category_video">Videos</string>
+    <string name="category_audio">Audio</string>
+    <string name="category_apps">Apps</string>
+    <string name="category_other">Other</string>
+
+    <!-- Recent Files -->
+    <string name="title_recent_files">Recent Files (24h)</string>
+    <string name="label_other_files">%1$d other files...</string>
+    <string name="label_no_path">Location not found</string>
+    <string name="msg_no_app_to_open_folder">No app found to open the folder</string>
+    <string name="label_path_prefix">Detailed Location (Path):</string>
+    <string name="msg_sd_card_not_found">SD card is not inserted or not recognized.</string>
+    <string name="action_copy_path">Tap to copy path</string>
+    <string name="action_view_folder">View folder contents</string>
+
+    <!-- Storage Status Messages -->
+    <string name="storage_status_loading">Loading storage information...</string>
+    <string name="storage_status_full">Storage is almost full! Consider cleaning up some files.</string>
+    <string name="storage_status_low">Storage space is running low.</string>
+    <string name="storage_status_enough">You have plenty of storage space. Great!</string>
+
+    <string name="msg_copied">Copied %1$s.\n%2$s</string>
+    <string name="permission_denied">Permission denied</string>
+    <string name="dialog_permission_title">Permission Required</string>
+    <string name="dialog_permission_message">Please allow \"Usage Access\" in the settings to retrieve app usage statistics.</string>
+    <string name="dialog_permission_positive">Open Settings</string>
+    <string name="dialog_permission_negative">Cancel</string>
+
+    <string name="folder_download">Downloads</string>
+    <string name="folder_camera">Camera</string>
+    <string name="msg_recent_files_empty">No files found from the last 24 hours.</string>
+    <string name="action_auto_scan">Auto-scan entire device</string>
+    <string name="label_manual_scan_hint">Or, select a specific folder:</string>
+    <string name="label_auto_scan_active">* Automatically scanning images, videos, and downloads</string>
+</resources>

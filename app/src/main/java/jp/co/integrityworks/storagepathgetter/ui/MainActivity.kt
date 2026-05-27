@@ -1,147 +1,70 @@
 package jp.co.integrityworks.storagepathgetter.ui
 
 import android.app.AlertDialog
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import android.widget.Toast
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import com.google.android.gms.ads.AdRequest
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.google.android.gms.ads.MobileAds
-import com.google.android.gms.ads.initialization.InitializationStatus
-import jp.co.integrityworks.storagepathgetter.BuildConfig
-import jp.co.integrityworks.storagepathgetter.Logger
 import jp.co.integrityworks.storagepathgetter.R
-import jp.co.integrityworks.storagepathgetter.Utils
-import jp.co.integrityworks.storagepathgetter.databinding.ActivityMainBinding
+import jp.co.integrityworks.storagepathgetter.ui.screens.StoragePathScreen
+import jp.co.integrityworks.storagepathgetter.ui.theme.StoragePathGetterTheme
+import jp.co.integrityworks.storagepathgetter.util.Logger
+import jp.co.integrityworks.storagepathgetter.util.Utils
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : ComponentActivity() {
     companion object {
         private val TAG = MainActivity::class.java.simpleName
     }
 
-    private lateinit var binding: ActivityMainBinding
     private val util by lazy { Utils(applicationContext) }
 
-    // 設定画面から戻ってきた時のコールバック
-    private val startForResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        if (util.hasUsageStatsPermission()) {
-            loadData()
-        } else {
-            Toast.makeText(this, "権限が許可されませんでした", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        Logger.debug(TAG, "onCreate")
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-
-        enableEdgeToEdge()
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
-
-        supportActionBar?.title =
-            if (BuildConfig.DEBUG) getString(R.string.app_name) + " (deb)" else getString(R.string.app_name)
-
-        //クリップボードのサービスのインスタンスを取得する
-        val mManager: ClipboardManager =
-            applicationContext.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        binding.copyInternalButton.setOnClickListener {
-            val myClip: ClipData = ClipData.newPlainText("label", binding.internalPathEditText.text)
-            mManager.setPrimaryClip(myClip)
-            Toast.makeText(
-                applicationContext,
-                "内部ストレージのパスをコピーしました。\n" + binding.internalPathEditText.text,
-                Toast.LENGTH_LONG
-            ).show()
-        }
-        binding.copyExternalButton.setOnClickListener {
-            val myClip: ClipData = ClipData.newPlainText("label", binding.externalPathEditText.text)
-            mManager.setPrimaryClip(myClip)
-            Toast.makeText(
-                applicationContext,
-                "外部ストレージのパスをコピーしました。\n" + binding.externalPathEditText.text,
-                Toast.LENGTH_LONG
-            ).show()
-        }
-
-        binding.getPathButton.setOnClickListener { init() }
-        binding.clearButton.setOnClickListener {
-            binding.internalPathEditText.text?.clear()
-            binding.externalPathEditText.text?.clear()
-            binding.sizeTextView.text = ""
-        }
-
-        MobileAds.initialize(this) { initializationStatus: InitializationStatus ->
-            /* get the adapter status */
-            val map =
-                initializationStatus.adapterStatusMap
-            for ((key, adapterStatus) in map) {
-                val state = adapterStatus.initializationState
-                Logger.debug(TAG,
-                    "key = " + key + ", state = " + state.name + ", desc = " + adapterStatus.description
-                )
+    // 権限設定画面から戻ってきた時の処理
+    private val startForResult =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            if (util.hasUsageStatsPermission()) {
+                // 権限が取得できたらUIの状態を更新するためのトリガーを引く
+            } else {
+                Toast.makeText(this, getString(R.string.permission_denied), Toast.LENGTH_SHORT)
+                    .show()
             }
         }
 
-        val adRequest: AdRequest = AdRequest.Builder().build()
-        binding.adView.loadAd(adRequest)
-    }
+    override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
+        super.onCreate(savedInstanceState)
+        Logger.debug(TAG, "onCreate")
+        enableEdgeToEdge()
 
-    override fun onResume() {
-        super.onResume()
-        init()
-    }
+        MobileAds.initialize(this) {}
 
-    private fun init() {
-        Logger.debug(TAG, "init()")
-        checkPermissionAndLoadData()
-    }
-
-    private fun checkPermissionAndLoadData() {
-        if (util.hasUsageStatsPermission()) {
-            loadData()
-        } else {
-            showPermissionDialog()
+        setContent {
+            StoragePathGetterTheme {
+                StoragePathScreen(
+                    util = util,
+                    onRequestPermission = { showPermissionDialog() }
+                )
+            }
         }
     }
 
     private fun showPermissionDialog() {
         AlertDialog.Builder(this)
-            .setTitle("権限が必要です")
-            .setMessage("アプリの使用状況を取得するために、設定画面で「使用状況へのアクセス」を許可してください。")
-            .setPositiveButton("設定を開く") { _, _ ->
+            .setTitle(getString(R.string.dialog_permission_title))
+            .setMessage(getString(R.string.dialog_permission_message))
+            .setPositiveButton(getString(R.string.dialog_permission_positive)) { _, _ ->
                 val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS).apply {
                     data = Uri.fromParts("package", packageName, null)
                 }
                 startForResult.launch(intent)
             }
-            .setNegativeButton("キャンセル", null)
+            .setNegativeButton(getString(R.string.dialog_permission_negative), null)
             .show()
-    }
-
-    private fun loadData() {
-        val internalPath = util.getPath(false)
-        val externalPath = util.getPath(true)
-        binding.internalPathEditText.setText(internalPath)
-        binding.externalPathEditText.setText(externalPath)
-        binding.sizeTextView.text = util.getMemoryInformation(internalPath, externalPath)
-
-        val appUsageList = util.getAppStorageUsage()
-        Logger.debug(TAG, appUsageList.toString())
     }
 }
