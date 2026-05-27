@@ -169,7 +169,6 @@ fun StoragePathScreen(util: Utils, onRequestPermission: () -> Unit) {
                 breakdown = util.getStorageBreakdown(path = ePath)
             )
 
-            // 特定フォルダが選択されている場合はそちらを優先（または追加）
             selectedFolderUri?.let {
                 recentFiles = util.getRecentFiles(it)
             }
@@ -299,7 +298,7 @@ private fun StatusMessageCard(usage: Float) {
     }
 
     Surface(
-        color = color.copy(alpha = 0.05f), // さらに透過させてモダンに
+        color = color.copy(alpha = 0.05f),
         shape = RoundedCornerShape(Dimens.RadiusMedium),
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -307,7 +306,7 @@ private fun StatusMessageCard(usage: Float) {
             modifier = Modifier.padding(
                 horizontal = Dimens.MarginLarge,
                 vertical = Dimens.MarginXLarge
-            ), // 余白を広げてゆったりと
+            ),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(

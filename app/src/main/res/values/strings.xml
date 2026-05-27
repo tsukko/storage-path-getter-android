@@ -2,6 +2,7 @@
     <string name="app_name">ストレージ案内</string>
     <string name="text_inner_path">内部ストレージの場所</string>
     <string name="text_external_path">SDカードの場所</string>
+    <string name="text_reacquire">再取得</string>
     <string name="text_clear">クリア</string>
 
     <!-- ストレージ内訳関連 -->

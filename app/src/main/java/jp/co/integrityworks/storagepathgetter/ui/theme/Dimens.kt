@@ -4,6 +4,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 object Dimens {
+    val MarginXXSmall = 2.dp
     val MarginSmall = 4.dp
     val MarginExtraSmall = 6.dp
     val MarginMiddle = 8.dp

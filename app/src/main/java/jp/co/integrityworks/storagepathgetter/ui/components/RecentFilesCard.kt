@@ -82,9 +82,9 @@ fun RecentFilesCard(
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    
+
                     Spacer(modifier = Modifier.height(Dimens.MarginLarge))
-                    
+
                     Text(
                         text = stringResource(id = R.string.label_manual_scan_hint),
                         style = MaterialTheme.typography.labelSmall,
@@ -135,9 +135,9 @@ fun RecentFilesCard(
                         modifier = Modifier.padding(top = Dimens.MarginSmall)
                     )
                 }
-                
+
                 Spacer(modifier = Modifier.height(Dimens.MarginLarge))
-                
+
                 // 再スキャン用のボタン
                 Button(
                     onClick = { onSelectFolder(null) },
@@ -152,10 +152,22 @@ fun RecentFilesCard(
 }
 
 @Composable
-private fun FolderHintChip(label: String, icon: ImageVector, onClick: () -> Unit, modifier: Modifier = Modifier) {
+private fun FolderHintChip(
+    label: String,
+    icon: ImageVector,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     AssistChip(
         onClick = onClick,
-        label = { Text(label, style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+        label = {
+            Text(
+                label,
+                style = MaterialTheme.typography.labelSmall,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        },
         leadingIcon = {
             Icon(
                 imageVector = icon,

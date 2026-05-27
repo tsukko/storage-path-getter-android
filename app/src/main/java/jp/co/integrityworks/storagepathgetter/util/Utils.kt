@@ -125,7 +125,7 @@ class Utils(private val context: Context) {
     }
 
     /**
-     * 指定されたディレクトリから直近24時間以内に更新されたファイルを取得する
+     * 指定されたディレクトリ（およびそのサブディレクトリ）から直近24時間以内に更新されたファイルを取得する
      */
     fun getRecentFiles(directoryUri: Uri): List<RecentFile> {
         val recentFiles = mutableListOf<RecentFile>()
@@ -134,19 +134,25 @@ class Utils(private val context: Context) {
         val now = System.currentTimeMillis()
         val twentyFourHoursAgo = now - (24 * 60 * 60 * 1000L)
 
-        root.listFiles().forEach { file ->
-            if (file.isFile && file.lastModified() >= twentyFourHoursAgo) {
-                recentFiles.add(
-                    RecentFile(
-                        name = file.name ?: "Unknown",
-                        size = file.length(),
-                        lastModified = file.lastModified(),
-                        uri = file.uri
+        // 再帰的にファイルを探索するヘルパー関数
+        fun findFilesRecursive(directory: DocumentFile) {
+            directory.listFiles().forEach { file ->
+                if (file.isDirectory) {
+                    findFilesRecursive(file)
+                } else if (file.isFile && file.lastModified() >= twentyFourHoursAgo) {
+                    recentFiles.add(
+                        RecentFile(
+                            name = file.name ?: "Unknown",
+                            size = file.length(),
+                            lastModified = file.lastModified(),
+                            uri = file.uri
+                        )
                     )
-                )
+                }
             }
         }
 
+        findFilesRecursive(root)
         return recentFiles.sortedByDescending { it.lastModified }
     }
 

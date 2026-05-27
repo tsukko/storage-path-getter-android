@@ -84,7 +84,12 @@ fun PathCard(
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = Dimens.ElevationSmall)
     ) {
-        Column(modifier = Modifier.padding(Dimens.MarginXLarge)) {
+        Column(
+            modifier = Modifier.padding(
+                horizontal = Dimens.MarginXLarge,
+                vertical = if (path.isEmpty()) Dimens.MarginLarge else Dimens.MarginXLarge
+            )
+        ) {
             // ヘッダー部分
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -125,21 +130,33 @@ fun PathCard(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
-                    Text(
-                        text = if (usage > 0) stringResource(
-                            id = R.string.label_usage_percent,
-                            usagePercent
-                        ) else stringResource(id = R.string.label_usage_info_none),
-                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
-                        color = when {
-                            isCritical -> MaterialTheme.colorScheme.error
-                            isWarning -> MaterialTheme.colorScheme.tertiary
-                            else -> MaterialTheme.colorScheme.primary
-                        }
-                    )
+
+                    if (path.isEmpty()) {
+                        // パスがない（未挿入）時のシンプルメッセージ
+                        Text(
+                            text = if (title.contains("SD") || title.contains("SDカード"))
+                                stringResource(id = R.string.msg_sd_card_not_found)
+                            else stringResource(id = R.string.label_no_path),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                        )
+                    } else {
+                        Text(
+                            text = if (usage > 0) stringResource(
+                                id = R.string.label_usage_percent,
+                                usagePercent
+                            ) else stringResource(id = R.string.label_usage_info_none),
+                            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
+                            color = when {
+                                isCritical -> MaterialTheme.colorScheme.error
+                                isWarning -> MaterialTheme.colorScheme.tertiary
+                                else -> MaterialTheme.colorScheme.primary
+                            }
+                        )
+                    }
                 }
 
-                if (statusEmoji.isNotEmpty()) {
+                if (path.isNotEmpty() && statusEmoji.isNotEmpty()) {
                     Surface(
                         shape = CircleShape,
                         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
@@ -152,82 +169,63 @@ fun PathCard(
                 }
             }
 
-            Spacer(modifier = Modifier.height(Dimens.MarginLarge))
+            // パスが存在する場合のみ以下の詳細コンテンツを表示
+            if (path.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(Dimens.MarginLarge))
 
-            // グラフ部分
-            if (usage > 0) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.Bottom
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.label_usage),
-                        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Spacer(modifier = Modifier.weight(1f))
-                    Text(
-                        text = usageText,
-                        style = MaterialTheme.typography.labelMedium.copy(
-                            fontWeight = FontWeight.SemiBold,
-                            fontFeatureSettings = "tnum"
-                        ),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                // グラフ部分
+                if (usage > 0) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.Bottom
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.label_usage),
+                            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(modifier = Modifier.weight(1f))
+                        Text(
+                            text = usageText,
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                fontWeight = FontWeight.SemiBold,
+                                fontFeatureSettings = "tnum"
+                            ),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(Dimens.MarginMiddle))
+
+                    LinearProgressIndicator(
+                        progress = { usage },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(Dimens.ProgressBarHeight)
+                            .clip(CircleShape),
+                        color = when {
+                            isCritical -> MaterialTheme.colorScheme.error
+                            isWarning -> MaterialTheme.colorScheme.tertiary
+                            else -> MaterialTheme.colorScheme.primary
+                        },
+                        trackColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                        strokeCap = StrokeCap.Round
                     )
                 }
 
-                Spacer(modifier = Modifier.height(Dimens.MarginMiddle))
+                Spacer(modifier = Modifier.height(Dimens.MarginXLarge))
 
-                LinearProgressIndicator(
-                    progress = { usage },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(Dimens.ProgressBarHeight)
-                        .clip(CircleShape),
-                    color = when {
-                        isCritical -> MaterialTheme.colorScheme.error
-                        isWarning -> MaterialTheme.colorScheme.tertiary
-                        else -> MaterialTheme.colorScheme.primary
-                    },
-                    trackColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
-                    strokeCap = StrokeCap.Round
-                )
-            }
-
-            Spacer(modifier = Modifier.height(Dimens.MarginXLarge))
-
-            // パス部分の改善（安心感優先：ボタン化）
-            Column {
-                Text(
-                    text = stringResource(id = R.string.label_path_prefix),
-                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                    modifier = Modifier.padding(
-                        start = Dimens.MarginSmall,
-                        bottom = Dimens.MarginSmall
-                    )
-                )
-
-                if (path.isEmpty()) {
-                    // パスがない（SDカード未挿入など）時の親切な表示
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(Dimens.RadiusMedium))
-                            .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.03f))
-                            .padding(Dimens.MarginLarge),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = if (title.contains("SD") || title.contains("SDカード"))
-                                stringResource(id = R.string.msg_sd_card_not_found)
-                            else stringResource(id = R.string.label_no_path),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
-                            textAlign = TextAlign.Center
+                // パス部分の改善（安心感優先：ボタン化）
+                Column {
+                    Text(
+                        text = stringResource(id = R.string.label_path_prefix),
+                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                        modifier = Modifier.padding(
+                            start = Dimens.MarginSmall,
+                            bottom = Dimens.MarginSmall
                         )
-                    }
-                } else {
+                    )
                     Surface(
                         onClick = { onCopy(path) },
                         shape = RoundedCornerShape(Dimens.RadiusMedium),
@@ -268,10 +266,8 @@ fun PathCard(
                         }
                     }
                 }
-            }
 
-            // アクションの階層化：フォルダを開くボタンを OutlinedButton へ
-            if (path.isNotEmpty()) {
+                // アクションの階層化：フォルダを開くボタンを OutlinedButton へ
                 Spacer(modifier = Modifier.height(Dimens.MarginMiddle))
                 OutlinedButton(
                     onClick = { onOpen(path) },
@@ -289,79 +285,79 @@ fun PathCard(
                         style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
                     )
                 }
-            }
 
-            // 内訳表示（さらに控えめに）
-            if (usage > 0) {
-                Spacer(modifier = Modifier.height(Dimens.MarginLarge))
+                // 内訳表示（さらに控えめに）
+                if (usage > 0) {
+                    Spacer(modifier = Modifier.height(Dimens.MarginLarge))
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(Dimens.RadiusSmall))
-                        .clickable { expanded = !expanded }
-                        .padding(vertical = Dimens.MarginMiddle),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = if (expanded) stringResource(id = R.string.action_hide_breakdown) else stringResource(
-                                id = R.string.action_show_breakdown
-                            ),
-                            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
-                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
-                        )
-                        Icon(
-                            imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
-                            modifier = Modifier.size(Dimens.IconNormal)
-                        )
-                    }
-                }
-
-                AnimatedVisibility(
-                    visible = expanded,
-                    enter = expandVertically() + fadeIn(),
-                    exit = shrinkVertically() + fadeOut()
-                ) {
-                    Column(
+                    Box(
                         modifier = Modifier
-                            .padding(top = Dimens.MarginMiddle)
-                            .clip(RoundedCornerShape(Dimens.RadiusMedium))
-                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f))
-                            .padding(Dimens.MarginLarge)
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(Dimens.RadiusSmall))
+                            .clickable { expanded = !expanded }
+                            .padding(vertical = Dimens.MarginMiddle),
+                        contentAlignment = Alignment.Center
                     ) {
-                        BreakdownRow(
-                            util,
-                            stringResource(id = R.string.category_image),
-                            breakdown.imageBytes,
-                            MaterialTheme.colorScheme.primary
-                        )
-                        BreakdownRow(
-                            util,
-                            stringResource(id = R.string.category_video),
-                            breakdown.videoBytes,
-                            MaterialTheme.colorScheme.secondary
-                        )
-                        BreakdownRow(
-                            util,
-                            stringResource(id = R.string.category_audio),
-                            breakdown.audioBytes,
-                            MaterialTheme.colorScheme.tertiary
-                        )
-                        BreakdownRow(
-                            util,
-                            stringResource(id = R.string.category_apps),
-                            breakdown.appBytes,
-                            MaterialTheme.colorScheme.error
-                        )
-                        BreakdownRow(
-                            util,
-                            stringResource(id = R.string.category_other),
-                            breakdown.otherBytes,
-                            MaterialTheme.colorScheme.outline
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = if (expanded) stringResource(id = R.string.action_hide_breakdown) else stringResource(
+                                    id = R.string.action_show_breakdown
+                                ),
+                                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                            )
+                            Icon(
+                                imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                                modifier = Modifier.size(Dimens.IconNormal)
+                            )
+                        }
+                    }
+
+                    AnimatedVisibility(
+                        visible = expanded,
+                        enter = expandVertically() + fadeIn(),
+                        exit = shrinkVertically() + fadeOut()
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .padding(top = Dimens.MarginMiddle)
+                                .clip(RoundedCornerShape(Dimens.RadiusMedium))
+                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f))
+                                .padding(Dimens.MarginLarge)
+                        ) {
+                            BreakdownRow(
+                                util,
+                                stringResource(id = R.string.category_image),
+                                breakdown.imageBytes,
+                                MaterialTheme.colorScheme.primary
+                            )
+                            BreakdownRow(
+                                util,
+                                stringResource(id = R.string.category_video),
+                                breakdown.videoBytes,
+                                MaterialTheme.colorScheme.secondary
+                            )
+                            BreakdownRow(
+                                util,
+                                stringResource(id = R.string.category_audio),
+                                breakdown.audioBytes,
+                                MaterialTheme.colorScheme.tertiary
+                            )
+                            BreakdownRow(
+                                util,
+                                stringResource(id = R.string.category_apps),
+                                breakdown.appBytes,
+                                MaterialTheme.colorScheme.error
+                            )
+                            BreakdownRow(
+                                util,
+                                stringResource(id = R.string.category_other),
+                                breakdown.otherBytes,
+                                MaterialTheme.colorScheme.outline
+                            )
+                        }
                     }
                 }
             }
