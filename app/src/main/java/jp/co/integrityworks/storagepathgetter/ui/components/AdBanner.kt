@@ -11,12 +11,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
 import jp.co.integrityworks.storagepathgetter.R
+import jp.co.integrityworks.storagepathgetter.ui.theme.Dimens
 
 @Composable
 fun AdBanner(modifier: Modifier = Modifier) {
@@ -24,7 +24,7 @@ fun AdBanner(modifier: Modifier = Modifier) {
         Box(
             modifier = modifier
                 .fillMaxWidth()
-                .height(50.dp)
+                .height(Dimens.AdBannerPlaceholderHeight)
                 .background(Color.LightGray),
             contentAlignment = Alignment.Center
         ) {

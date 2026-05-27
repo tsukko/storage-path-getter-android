@@ -41,6 +41,7 @@ android {
         debug {
             applicationIdSuffix = ".deb"
             isMinifyEnabled = false
+            ndk.debugSymbolLevel = "full"
 
             // Modern property access with explicit error reporting
             val admobAppId = project.findProperty("admobAppIdSample") as? String

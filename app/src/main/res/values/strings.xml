@@ -2,7 +2,6 @@
     <string name="app_name">ストレージ案内</string>
     <string name="text_inner_path">内部ストレージの場所</string>
     <string name="text_external_path">SDカードの場所</string>
-    <string name="text_reacquire">再取得</string>
     <string name="text_clear">クリア</string>
 
     <!-- ストレージ内訳関連 -->
@@ -19,6 +18,7 @@
 
     <!-- 最近のファイル関連 -->
     <string name="title_recent_files">最近のファイル (24時間以内)</string>
+    <string name="action_select_folder">フォルダを選択してスキャン</string>
     <string name="label_other_files">他 %1$d 件のファイル...</string>
     <string name="label_no_path">保存先が見つかりません</string>
     <string name="msg_no_app_to_open_folder">フォルダを開けるアプリが見つかりませんでした</string>
@@ -43,7 +43,5 @@
     <string name="folder_download">ダウンロード</string>
     <string name="folder_camera">カメラ</string>
     <string name="msg_recent_files_empty">24時間以内に保存されたファイルは、まだ見つかりません。</string>
-    <string name="action_auto_scan">端末全体を自動スキャンする</string>
     <string name="label_manual_scan_hint">または、特定のフォルダを選んで探す:</string>
-    <string name="label_auto_scan_active">※端末全体の画像・動画・ダウンロードを自動で探しています</string>
 </resources>

@@ -46,8 +46,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import jp.co.integrityworks.storagepathgetter.R
 import jp.co.integrityworks.storagepathgetter.data.entities.StorageBreakdown
 import jp.co.integrityworks.storagepathgetter.ui.theme.Dimens
@@ -122,7 +120,7 @@ fun PathCard(
                         text = title,
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.ExtraBold,
-                            letterSpacing = 0.5.sp
+                            letterSpacing = Dimens.LetterSpacingSmall
                         ),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
@@ -145,10 +143,10 @@ fun PathCard(
                     Surface(
                         shape = CircleShape,
                         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                        modifier = Modifier.size(40.dp)
+                        modifier = Modifier.size(Dimens.BadgeSize)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
-                            Text(text = statusEmoji, fontSize = 20.sp)
+                            Text(text = statusEmoji, fontSize = Dimens.TextSizeEmoji)
                         }
                     }
                 }
@@ -257,10 +255,10 @@ fun PathCard(
                                 Icon(
                                     imageVector = Icons.Default.ContentCopy,
                                     contentDescription = null,
-                                    modifier = Modifier.size(14.dp),
+                                    modifier = Modifier.size(Dimens.IconXXSmall),
                                     tint = MaterialTheme.colorScheme.primary
                                 )
-                                Spacer(modifier = Modifier.width(6.dp))
+                                Spacer(modifier = Modifier.width(Dimens.MarginExtraSmall))
                                 Text(
                                     text = stringResource(id = R.string.action_copy_path),
                                     style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
@@ -283,9 +281,9 @@ fun PathCard(
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.OpenInNew,
                         contentDescription = null,
-                        modifier = Modifier.size(18.dp)
+                        modifier = Modifier.size(Dimens.IconXSmall)
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(Dimens.MarginMiddle))
                     Text(
                         text = stringResource(id = R.string.action_view_folder),
                         style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
@@ -381,7 +379,7 @@ private fun BreakdownRow(util: Utils, label: String, bytes: Long, color: Color) 
     ) {
         Box(
             modifier = Modifier
-                .size(Dimens.MarginMiddle + Dimens.MarginSmall / 2)
+                .size(Dimens.MarginMedium)
                 .clip(CircleShape)
                 .background(color)
         )

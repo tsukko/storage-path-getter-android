@@ -86,32 +86,6 @@ fun StoragePathScreen(util: Utils, onRequestPermission: () -> Unit) {
     var recentFiles by remember { mutableStateOf<List<RecentFile>>(emptyList()) }
     var selectedFolderUri by remember { mutableStateOf<Uri?>(null) }
 
-    // 権限があるかどうかを保持
-    var isAutoScanEnabled by remember {
-        mutableStateOf(
-            if (isInspection) true else {
-                val permission =
-                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-                        context.checkSelfPermission(android.Manifest.permission.READ_MEDIA_IMAGES) == android.content.pm.PackageManager.PERMISSION_GRANTED
-                    } else {
-                        context.checkSelfPermission(android.Manifest.permission.READ_EXTERNAL_STORAGE) == android.content.pm.PackageManager.PERMISSION_GRANTED
-                    }
-                permission
-            }
-        )
-    }
-
-    // メディア権限のリクエスト用
-    val mediaPermissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestMultiplePermissions()
-    ) { permissions ->
-        val granted = permissions.entries.all { it.value }
-        if (granted) {
-            isAutoScanEnabled = true
-            recentFiles = util.getRecentFilesAutomatic()
-        }
-    }
-
     // 特定のフォルダを初期位置として開くためのランチャー
     val customFolderPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -195,14 +169,9 @@ fun StoragePathScreen(util: Utils, onRequestPermission: () -> Unit) {
                 breakdown = util.getStorageBreakdown(path = ePath)
             )
 
-            // 自動スキャン（MediaStore）の実行
-            recentFiles = util.getRecentFilesAutomatic()
-
             // 特定フォルダが選択されている場合はそちらを優先（または追加）
             selectedFolderUri?.let {
-                val manualFiles = util.getRecentFiles(it)
-                recentFiles = (recentFiles + manualFiles).distinctBy { file -> file.uri }
-                    .sortedByDescending { file -> file.lastModified }
+                recentFiles = util.getRecentFiles(it)
             }
         } else {
             onRequestPermission()
@@ -306,20 +275,7 @@ fun StoragePathScreen(util: Utils, onRequestPermission: () -> Unit) {
             RecentFilesCard(
                 util = util,
                 files = recentFiles,
-                isAutoScanEnabled = isAutoScanEnabled,
-                onSelectFolder = { launchFolderPicker(it) },
-                onRequestAutoScan = {
-                    val permissions =
-                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-                            arrayOf(
-                                android.Manifest.permission.READ_MEDIA_IMAGES,
-                                android.Manifest.permission.READ_MEDIA_VIDEO
-                            )
-                        } else {
-                            arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE)
-                        }
-                    mediaPermissionLauncher.launch(permissions)
-                }
+                onSelectFolder = { launchFolderPicker(it) }
             )
 
             Spacer(modifier = Modifier.height(Dimens.MarginMiddle))
