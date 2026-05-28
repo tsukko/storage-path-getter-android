@@ -21,8 +21,8 @@ android {
         applicationId = "jp.co.integrityworks.storagepathgetter"
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
-        versionCode = 7
-        versionName = "2.0"
+        versionCode = 9
+        versionName = "2.0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -55,6 +55,7 @@ android {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
+            ndk.debugSymbolLevel = "full"
 
             // Modern property access with explicit error reporting for release builds
             val admobAppId = project.findProperty("admobAppIdStoragePath") as? String
@@ -101,6 +102,7 @@ dependencies {
     implementation(libs.androidx.compose.material.icons.core)
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.activity.compose)
+    implementation(libs.google.material)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.InsertDriveFile
-import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.History
@@ -45,9 +44,7 @@ import java.util.Date
 fun RecentFilesCard(
     util: Utils,
     files: List<RecentFile>,
-    isAutoScanEnabled: Boolean,
     onSelectFolder: (String?) -> Unit,
-    onRequestAutoScan: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -75,7 +72,7 @@ fun RecentFilesCard(
 
             Spacer(modifier = Modifier.height(Dimens.MarginLarge))
 
-            if (files.isEmpty() && !isAutoScanEnabled) {
+            if (files.isEmpty()) {
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -87,19 +84,6 @@ fun RecentFilesCard(
                     )
 
                     Spacer(modifier = Modifier.height(Dimens.MarginLarge))
-
-                    // 端末全体スキャンボタン（目立たせる）
-                    Button(
-                        onClick = onRequestAutoScan,
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(Dimens.RadiusMedium)
-                    ) {
-                        Icon(imageVector = Icons.Default.AutoAwesome, contentDescription = null)
-                        Spacer(modifier = Modifier.width(Dimens.MarginMiddle))
-                        Text(stringResource(id = R.string.action_auto_scan))
-                    }
-
-                    Spacer(modifier = Modifier.height(Dimens.MarginMiddle))
 
                     Text(
                         text = stringResource(id = R.string.label_manual_scan_hint),
@@ -126,15 +110,17 @@ fun RecentFilesCard(
                             modifier = Modifier.weight(1f)
                         )
                     }
+
+                    Spacer(modifier = Modifier.height(Dimens.MarginLarge))
+
+                    Button(
+                        onClick = { onSelectFolder(null) },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(Dimens.RadiusMedium)
+                    ) {
+                        Text(stringResource(id = R.string.action_select_folder))
+                    }
                 }
-            } else if (files.isEmpty() && isAutoScanEnabled) {
-                // 権限はあるがファイルが0件の場合
-                Text(
-                    text = stringResource(id = R.string.msg_recent_files_empty),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                )
             } else {
                 files.take(8).forEach { file ->
                     RecentFileItem(util, file)
@@ -152,12 +138,14 @@ fun RecentFilesCard(
 
                 Spacer(modifier = Modifier.height(Dimens.MarginLarge))
 
-                // 再スキャン用の控えめなボタン
-                Text(
-                    text = stringResource(id = R.string.label_auto_scan_active),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-                )
+                // 再スキャン用のボタン
+                Button(
+                    onClick = { onSelectFolder(null) },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(Dimens.RadiusMedium)
+                ) {
+                    Text(stringResource(id = R.string.action_select_folder))
+                }
             }
         }
     }

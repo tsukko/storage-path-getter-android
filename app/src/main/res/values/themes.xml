@@ -10,8 +10,9 @@
         <item name="postSplashScreenTheme">@style/Theme.MyApplication</item>
     </style>
 
-    <!-- 本来のテーマ（UIにActionBarを表示しない設定） -->
-    <style name="Theme.MyApplication" parent="android:Theme.Material.NoActionBar">
-        <!-- Compose側で制御するため、XMLでの色指定は最小限でOK -->
+    <!-- 本来のテーマ（Material 3を採用） -->
+    <style name="Theme.MyApplication" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- エッジ ツー エッジを正しく動作させるための設定 -->
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
     </style>
 </resources>

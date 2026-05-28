@@ -8,7 +8,6 @@ import android.net.Uri
 import android.provider.DocumentsContract
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -30,6 +29,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.SdStorage
 import androidx.compose.material.icons.filled.Smartphone
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -40,8 +40,10 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -56,6 +58,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.net.toUri
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import jp.co.integrityworks.storagepathgetter.R
 import jp.co.integrityworks.storagepathgetter.data.entities.RecentFile
 import jp.co.integrityworks.storagepathgetter.data.entities.StorageVolume
@@ -69,11 +74,14 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StoragePathScreen(util: Utils, onRequestPermission: () -> Unit) {
+fun StoragePathScreen(util: Utils, onOpenSettings: () -> Unit) {
     val context = LocalContext.current
     val isInspection = LocalInspectionMode.current
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+
+    // 権限ダイアログの表示管理
+    var showPermissionDialog by remember { mutableStateOf(false) }
 
     // ストレージ情報を一括管理
     var internalVolume by remember {
@@ -85,32 +93,6 @@ fun StoragePathScreen(util: Utils, onRequestPermission: () -> Unit) {
 
     var recentFiles by remember { mutableStateOf<List<RecentFile>>(emptyList()) }
     var selectedFolderUri by remember { mutableStateOf<Uri?>(null) }
-
-    // 権限があるかどうかを保持
-    var isAutoScanEnabled by remember {
-        mutableStateOf(
-            if (isInspection) true else {
-                val permission =
-                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-                        context.checkSelfPermission(android.Manifest.permission.READ_MEDIA_IMAGES) == android.content.pm.PackageManager.PERMISSION_GRANTED
-                    } else {
-                        context.checkSelfPermission(android.Manifest.permission.READ_EXTERNAL_STORAGE) == android.content.pm.PackageManager.PERMISSION_GRANTED
-                    }
-                permission
-            }
-        )
-    }
-
-    // メディア権限のリクエスト用
-    val mediaPermissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestMultiplePermissions()
-    ) { permissions ->
-        val granted = permissions.entries.all { it.value }
-        if (granted) {
-            isAutoScanEnabled = true
-            recentFiles = util.getRecentFilesAutomatic()
-        }
-    }
 
     // 特定のフォルダを初期位置として開くためのランチャー
     val customFolderPickerLauncher = rememberLauncherForActivityResult(
@@ -132,7 +114,6 @@ fun StoragePathScreen(util: Utils, onRequestPermission: () -> Unit) {
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
         try {
             if (folderName != null) {
-                // 内部ストレージの特定フォルダ（DownloadやDCIM）を指すURIを構築
                 val initialUri = DocumentsContract.buildDocumentUri(
                     "com.android.externalstorage.documents",
                     "primary:$folderName"
@@ -140,7 +121,6 @@ fun StoragePathScreen(util: Utils, onRequestPermission: () -> Unit) {
                 intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, initialUri)
             }
         } catch (e: Exception) {
-            // URIの構築に失敗した場合は、初期位置指定なしで開く
             jp.co.integrityworks.storagepathgetter.util.Logger.error(
                 "StoragePathScreen",
                 "Failed to build initial URI",
@@ -178,6 +158,7 @@ fun StoragePathScreen(util: Utils, onRequestPermission: () -> Unit) {
 
     val loadData = {
         if (util.hasUsageStatsPermission()) {
+            showPermissionDialog = false // 権限があればダイアログを閉じる
             val iPath = util.getPath(isExternal = false)
             val ePath = util.getPath(isExternal = true)
 
@@ -195,23 +176,34 @@ fun StoragePathScreen(util: Utils, onRequestPermission: () -> Unit) {
                 breakdown = util.getStorageBreakdown(path = ePath)
             )
 
-            // 自動スキャン（MediaStore）の実行
-            recentFiles = util.getRecentFilesAutomatic()
-
-            // 特定フォルダが選択されている場合はそちらを優先（または追加）
             selectedFolderUri?.let {
-                val manualFiles = util.getRecentFiles(it)
-                recentFiles = (recentFiles + manualFiles).distinctBy { file -> file.uri }
-                    .sortedByDescending { file -> file.lastModified }
+                recentFiles = util.getRecentFiles(it)
             }
         } else {
-            onRequestPermission()
+            showPermissionDialog = true // 権限がなければダイアログを表示
         }
     }
 
+    // 初回表示時にデータをロード
     LaunchedEffect(Unit) {
         if (!isInspection) {
             loadData()
+        }
+    }
+
+    // 設定画面から戻ってきた時などにデータを再ロードする
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                if (!isInspection) {
+                    loadData()
+                }
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
         }
     }
 
@@ -267,13 +259,14 @@ fun StoragePathScreen(util: Utils, onRequestPermission: () -> Unit) {
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = Dimens.MarginLarge)
                 .padding(top = Dimens.MarginLarge),
-            verticalArrangement = Arrangement.spacedBy(Dimens.MarginXLarge)
         ) {
             StatusMessageCard(internalVolume.usageRatio)
 
+            Spacer(modifier = Modifier.height(Dimens.MarginXLarge))
+
             PathCard(
                 util = util,
-                title = stringResource(id = R.string.text_inner_path),
+                title = innerPathLabel,
                 path = internalVolume.path,
                 icon = Icons.Default.Smartphone,
                 usage = internalVolume.usageRatio,
@@ -287,9 +280,11 @@ fun StoragePathScreen(util: Utils, onRequestPermission: () -> Unit) {
                 onOpen = { openFolder(it) }
             )
 
+            Spacer(modifier = Modifier.height(Dimens.MarginXLarge))
+
             PathCard(
                 util = util,
-                title = stringResource(id = R.string.text_external_path),
+                title = externalPathLabel,
                 path = externalVolume.path,
                 icon = Icons.Default.SdStorage,
                 usage = externalVolume.usageRatio,
@@ -303,27 +298,37 @@ fun StoragePathScreen(util: Utils, onRequestPermission: () -> Unit) {
                 onOpen = { openFolder(it) }
             )
 
+            Spacer(modifier = Modifier.height(Dimens.MarginXLarge))
+
             RecentFilesCard(
                 util = util,
                 files = recentFiles,
-                isAutoScanEnabled = isAutoScanEnabled,
-                onSelectFolder = { launchFolderPicker(it) },
-                onRequestAutoScan = {
-                    val permissions =
-                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-                            arrayOf(
-                                android.Manifest.permission.READ_MEDIA_IMAGES,
-                                android.Manifest.permission.READ_MEDIA_VIDEO
-                            )
-                        } else {
-                            arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE)
-                        }
-                    mediaPermissionLauncher.launch(permissions)
-                }
+                onSelectFolder = { launchFolderPicker(it) }
             )
 
             Spacer(modifier = Modifier.height(Dimens.MarginMiddle))
         }
+    }
+
+    // 権限リクエストダイアログ (Compose版)
+    if (showPermissionDialog) {
+        AlertDialog(
+            onDismissRequest = { /* キャンセル不可 */ },
+            title = { Text(stringResource(id = R.string.dialog_permission_title)) },
+            text = { Text(stringResource(id = R.string.dialog_permission_message)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    onOpenSettings()
+                }) {
+                    Text(stringResource(id = R.string.dialog_permission_positive))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showPermissionDialog = false }) {
+                    Text(stringResource(id = R.string.dialog_permission_negative))
+                }
+            }
+        )
     }
 }
 
@@ -343,7 +348,7 @@ private fun StatusMessageCard(usage: Float) {
     }
 
     Surface(
-        color = color.copy(alpha = 0.05f), // さらに透過させてモダンに
+        color = color.copy(alpha = 0.05f),
         shape = RoundedCornerShape(Dimens.RadiusMedium),
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -351,7 +356,7 @@ private fun StatusMessageCard(usage: Float) {
             modifier = Modifier.padding(
                 horizontal = Dimens.MarginLarge,
                 vertical = Dimens.MarginXLarge
-            ), // 余白を広げてゆったりと
+            ),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
@@ -390,7 +395,7 @@ fun StoragePathScreenPreview() {
     StoragePathGetterTheme {
         StoragePathScreen(
             util = Utils(context),
-            onRequestPermission = {}
+            onOpenSettings = {}
         )
     }
 }

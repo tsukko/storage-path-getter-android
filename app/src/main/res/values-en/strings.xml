@@ -19,6 +19,7 @@
 
     <!-- Recent Files -->
     <string name="title_recent_files">Recent Files (24h)</string>
+    <string name="action_select_folder">Select Folder to Scan</string>
     <string name="label_other_files">%1$d other files...</string>
     <string name="label_no_path">Location not found</string>
     <string name="msg_no_app_to_open_folder">No app found to open the folder</string>
@@ -43,7 +44,5 @@
     <string name="folder_download">Downloads</string>
     <string name="folder_camera">Camera</string>
     <string name="msg_recent_files_empty">No files found from the last 24 hours.</string>
-    <string name="action_auto_scan">Auto-scan entire device</string>
     <string name="label_manual_scan_hint">Or, select a specific folder:</string>
-    <string name="label_auto_scan_active">* Automatically scanning images, videos, and downloads</string>
 </resources>
