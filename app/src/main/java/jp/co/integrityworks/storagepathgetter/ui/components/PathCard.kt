@@ -130,30 +130,18 @@ fun PathCard(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
-
-                    if (path.isEmpty()) {
-                        // パスがない（未挿入）時のシンプルメッセージ
-                        Text(
-                            text = if (title.contains("SD") || title.contains("SDカード"))
-                                stringResource(id = R.string.msg_sd_card_not_found)
-                            else stringResource(id = R.string.label_no_path),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                        )
-                    } else {
-                        Text(
-                            text = if (usage > 0) stringResource(
-                                id = R.string.label_usage_percent,
-                                usagePercent
-                            ) else stringResource(id = R.string.label_usage_info_none),
-                            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
-                            color = when {
-                                isCritical -> MaterialTheme.colorScheme.error
-                                isWarning -> MaterialTheme.colorScheme.tertiary
-                                else -> MaterialTheme.colorScheme.primary
-                            }
-                        )
-                    }
+                    Text(
+                        text = if (usage > 0) stringResource(
+                            id = R.string.label_usage_percent,
+                            usagePercent
+                        ) else stringResource(id = R.string.label_usage_info_none),
+                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
+                        color = when {
+                            isCritical -> MaterialTheme.colorScheme.error
+                            isWarning -> MaterialTheme.colorScheme.tertiary
+                            else -> MaterialTheme.colorScheme.primary
+                        }
+                    )
                 }
 
                 if (path.isNotEmpty() && statusEmoji.isNotEmpty()) {
@@ -226,64 +214,88 @@ fun PathCard(
                             bottom = Dimens.MarginSmall
                         )
                     )
-                    Surface(
-                        onClick = { onCopy(path) },
-                        shape = RoundedCornerShape(Dimens.RadiusMedium),
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.05f),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(Dimens.MarginLarge),
-                            horizontalAlignment = Alignment.CenterHorizontally
+
+                    if (path.isEmpty()) {
+                        // パスがない（SDカード未挿入など）時の親切な表示
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(Dimens.RadiusMedium))
+                                .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.03f))
+                                .padding(Dimens.MarginLarge),
+                            contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = path,
-                                style = MaterialTheme.typography.bodySmall.copy(
-                                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
-                                    fontSize = Dimens.TextSizeXXSmall
-                                ),
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
+                                text = if (title.contains("SD") || title.contains("SDカード"))
+                                    stringResource(id = R.string.msg_sd_card_not_found)
+                                else stringResource(id = R.string.label_no_path),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
                                 textAlign = TextAlign.Center
                             )
-
-                            Spacer(modifier = Modifier.height(Dimens.MarginSmall))
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = Icons.Default.ContentCopy,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(Dimens.IconXXSmall),
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-                                Spacer(modifier = Modifier.width(Dimens.MarginExtraSmall))
+                        }
+                    } else {
+                        Surface(
+                            onClick = { onCopy(path) },
+                            shape = RoundedCornerShape(Dimens.RadiusMedium),
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.05f),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(Dimens.MarginLarge),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
                                 Text(
-                                    text = stringResource(id = R.string.action_copy_path),
-                                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                                    color = MaterialTheme.colorScheme.primary
+                                    text = path,
+                                    style = MaterialTheme.typography.bodySmall.copy(
+                                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                                        fontSize = Dimens.TextSizeXXSmall
+                                    ),
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    textAlign = TextAlign.Center
                                 )
+
+                                Spacer(modifier = Modifier.height(Dimens.MarginSmall))
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = Icons.Default.ContentCopy,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(Dimens.IconXXSmall),
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                    Spacer(modifier = Modifier.width(Dimens.MarginExtraSmall))
+                                    Text(
+                                        text = stringResource(id = R.string.action_copy_path),
+                                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
                             }
                         }
                     }
                 }
 
                 // アクションの階層化：フォルダを開くボタンを OutlinedButton へ
-                Spacer(modifier = Modifier.height(Dimens.MarginMiddle))
-                OutlinedButton(
-                    onClick = { onOpen(path) },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(Dimens.RadiusMedium)
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.OpenInNew,
-                        contentDescription = null,
-                        modifier = Modifier.size(Dimens.IconXSmall)
-                    )
-                    Spacer(modifier = Modifier.width(Dimens.MarginMiddle))
-                    Text(
-                        text = stringResource(id = R.string.action_view_folder),
-                        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
-                    )
+                if (path.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(Dimens.MarginMiddle))
+                    OutlinedButton(
+                        onClick = { onOpen(path) },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(Dimens.RadiusMedium)
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.OpenInNew,
+                            contentDescription = null,
+                            modifier = Modifier.size(Dimens.IconXSmall)
+                        )
+                        Spacer(modifier = Modifier.width(Dimens.MarginMiddle))
+                        Text(
+                            text = stringResource(id = R.string.action_view_folder),
+                            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
+                        )
+                    }
                 }
 
                 // 内訳表示（さらに控えめに）
